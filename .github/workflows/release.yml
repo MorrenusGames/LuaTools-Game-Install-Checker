@@ -1,0 +1,80 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v1.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore SteamGameVerifierWPF.csproj
+
+    - name: Build and publish
+      run: dotnet publish SteamGameVerifierWPF.csproj -c Release -r win-x64 --self-contained true -o ./publish
+
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Create release archive
+      run: |
+        cd publish
+        Compress-Archive -Path LuaToolsGameChecker.exe -DestinationPath ../LuaToolsGameChecker-v${{ steps.get_version.outputs.VERSION }}.zip
+      shell: pwsh
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: LuaTools Game Install Checker v${{ steps.get_version.outputs.VERSION }}
+        body: |
+          ## LuaTools Game Install Checker v${{ steps.get_version.outputs.VERSION }}
+
+          **What's New:**
+          - Steam game verification tool
+          - DLC update management (Enable/Disable)
+          - Activation reset functionality
+          - DRM screenshot wizard
+          - Automated report generation
+
+          **Installation:**
+          1. Download `LuaToolsGameChecker-v${{ steps.get_version.outputs.VERSION }}.zip`
+          2. Extract the executable
+          3. Run `LuaToolsGameChecker.exe`
+
+          **Requirements:**
+          - Windows 10/11 x64
+          - No .NET installation required (self-contained)
+
+          **File Size:** ~68 MB (includes .NET runtime)
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./LuaToolsGameChecker-v${{ steps.get_version.outputs.VERSION }}.zip
+        asset_name: LuaToolsGameChecker-v${{ steps.get_version.outputs.VERSION }}.zip
+        asset_content_type: application/zip
