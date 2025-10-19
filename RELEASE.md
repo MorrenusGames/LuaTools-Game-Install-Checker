@@ -33,15 +33,14 @@ Starting from **v1.2**, all major versions follow the pattern `v1.x`:
    ```
 
 4. **GitHub Actions will automatically:**
-   - Build the self-contained executable
-   - Create a compressed .zip file
+   - Build the self-contained, compressed executable
    - Create a GitHub release
    - Upload the executable as a release asset
 
 ### What Gets Released
 
 Each release includes:
-- **LuaToolsGameChecker-v1.x.zip** - Contains the self-contained executable
+- **LuaToolsGameChecker-v1.x.exe** - Self-contained executable with internal compression
 - File size: ~68 MB (includes .NET 8 runtime)
 - Platform: Windows 10/11 x64
 
