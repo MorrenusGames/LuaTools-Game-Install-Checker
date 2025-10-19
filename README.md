@@ -1,63 +1,84 @@
 # LuaTools - Steam Game Install Checker
 
-A C# WinForms application that verifies Steam game installations and generates diagnostic reports for support purposes.
+A WPF application that verifies Steam game installations, manages DLC updates, and generates diagnostic reports for support purposes.
 
 ## Features
 
 - **Automatic Steam Detection**: Finds Steam installation via Windows Registry
 - **Multi-Library Support**: Scans all Steam library folders
 - **Game Verification**: Validates game installation by AppID
+- **DLC Update Management**: Enable/Disable depot updates for games
+- **Workshop Decryption Key Support**: Preserves workshop content access
+- **Activation Reset**: Restart Steam and clear game activation
+- **Screenshot Wizard**: Capture DRM status screenshots
 - **Detailed Reports**: Generates comprehensive text reports including:
   - Game folder directory path
   - Actual folder size (calculated)
   - Steam manifest folder size
   - Build ID from Steam manifest
   - Folder structure tree (root level files/folders)
-  - Optional: Formatted Lua file contents
-- **Steam Restart**: Built-in functionality to restart Steam after Lua changes
-- **Export Reports**: Save verification reports as text files
+  - Formatted Lua file contents
+- **Export Reports**: Save verification reports and screenshots
 
 ## Requirements
 
-- Windows OS
-- .NET 8.0 Runtime or SDK
+- Windows 10/11 x64
+- .NET 8.0 Runtime (or SDK for building)
 - Steam installed
 
-## Building the Application
+## Installation
 
-### Using Visual Studio 2022
-1. Open `SteamGameVerifier.sln` in Visual Studio (or the folder in VS Code)
+### Pre-built Release
+1. Download `LuaToolsGameChecker-vX.X.exe` from [Releases](../../releases)
+2. Run the executable directly (no installation needed)
+3. Self-contained - includes .NET 8 runtime
+
+### Building from Source
+
+#### Using Visual Studio 2022
+1. Open the project folder in Visual Studio
 2. Build > Build Solution (or press F6)
 3. Run the application (F5)
 
-### Using .NET CLI
+#### Using .NET CLI
 ```bash
-cd "C:\Morrenus Stuff\LuaTools Game Install Checker"
-dotnet build
-dotnet run
+cd <project-directory>
+dotnet build SteamGameVerifierWPF.csproj
+dotnet run --project SteamGameVerifierWPF.csproj
 ```
 
-### Using MSBuild (if you have Visual Studio installed)
+#### Build Self-Contained Executable
 ```bash
-cd "C:\Morrenus Stuff\LuaTools Game Install Checker"
-"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" SteamGameVerifier.csproj
+cd <project-directory>
+dotnet publish SteamGameVerifierWPF.csproj -c Release -r win-x64 --self-contained true
 ```
+
+Output: `bin/Release/net8.0-windows/win-x64/publish/LuaToolsGameChecker.exe`
 
 ## Usage
 
-1. **Enter AppID**: Type the Steam AppID of the game you want to verify
-2. **(Optional) Include Lua File**: Check the box and browse to select a .lua file to include in the report
-3. **Click "Verify & Generate Report"**: The app will:
-   - Find the game in your Steam libraries
-   - Calculate the actual folder size
-   - Generate a folder structure tree
-   - Display the report in the preview window
-4. **Save Report**: Click "Save Report to File" to export as a .txt file
-5. **(Optional) Restart Steam**: Click "Reset Activation & Restart Steam" to restart Steam (warns about killing current activation)
+### Step 1: Load Game
+1. Enter the Steam AppID of the game
+2. Click "Load Game Information"
+3. The app will detect the game and Lua file automatically
+
+### Step 2: Manage Updates (Optional)
+- **Disable Updates**: Comments out depot download lines, prevents file downloads
+- **Enable Updates**: Uncomments depot lines, allows Steam to update files
+
+### Step 3: Reset Activation
+- Restarts Steam, launches the game once, clears Steam ID
+
+### Step 4: Screenshot Wizard
+- Capture DRM status screenshots for support tickets
+- Automatically saves to report folder
+
+### Step 5: Generate Report
+- Creates comprehensive verification report
+- Includes all screenshots and game information
+- Opens folder with all files for support ticket submission
 
 ## Report Output Format
-
-The generated report includes:
 
 ```
 ═══════════════════════════════════════════════════════════════
@@ -66,14 +87,14 @@ The generated report includes:
 
 Generated: 2025-10-14 10:30:00
 AppID: 322170
-Game Name: Geometry Dash
+Game Name: Example Game
 
 ───────────────────────────────────────────────────────────────
 INSTALLATION DETAILS
 ───────────────────────────────────────────────────────────────
 
 Install Directory Path:
-  K:\steam client\steamapps\common\Geometry Dash
+  <Steam-Library>\steamapps\common\Example Game
 
 Folder Size (Actual): 313.66 MB (328,749,547 bytes)
 Folder Size (Steam):  313.66 MB (328,749,547 bytes)
@@ -84,69 +105,91 @@ Build ID: 16373064
 FOLDER STRUCTURE (ROOT LEVEL)
 ───────────────────────────────────────────────────────────────
 
-Geometry Dash\
+Example Game\
+  [Data]
   [Resources]
-  [steam_api.dll]
-  GeometryDash.exe
-  ...
+  steam_api.dll
+  Game.exe
 
 ───────────────────────────────────────────────────────────────
 LUA FILE CONTENTS (FORMATTED)
 ───────────────────────────────────────────────────────────────
 
 File: game_config.lua
+Path: <Steam-Install>\config\stplug-in\game_config.lua
 
 addappid(322170)
-    config_setting_1 = true
-    config_setting_2 = "value"
-    ...
+addappid(322171, 1, "decryption_key_hash")
+    setManifestid(322170, 1234567890)
 ```
 
-## Files
+## Project Structure
 
-- `SteamGameVerifier.csproj` - Project file
-- `Program.cs` - Application entry point
-- `MainForm.cs` - Main GUI form with all UI logic
-- `SteamHelper.cs` - Core Steam-related functionality:
+- `SteamGameVerifierWPF.csproj` - WPF project file
+- `MainWindow.xaml/.cs` - Main application window
+- `ScreenshotWizard.xaml/.cs` - Screenshot capture wizard
+- `SnippingWindow.xaml/.cs` - Screenshot selection tool
+- `WPF_SteamHelper.cs` - Core Steam functionality:
   - Registry reading
   - VDF/ACF parsing
+  - Lua file detection and modification
   - Folder size calculation
-  - Tree generation
   - Steam process management
 
 ## How It Works
 
-1. **Registry Detection**: Reads Steam install path from `HKLM\SOFTWARE\WOW6432Node\Valve\Steam`
+1. **Registry Detection**: Reads Steam install path from Windows Registry
 2. **Library Scanning**: Parses `libraryfolders.vdf` to find all Steam library locations
-3. **Game Location**: Searches for `appmanifest_<appid>.acf` in each library's steamapps folder
-4. **Manifest Parsing**: Extracts `installdir`, `buildid`, and `SizeOnDisk` from the ACF file
-5. **Folder Analysis**: Calculates actual folder size and generates structure tree
-6. **Report Generation**: Formats all data into a readable text report
+3. **Game Location**: Searches for `appmanifest_<appid>.acf` in each library
+4. **Lua Detection**: Scans `<Steam>\config\stplug-in\*.lua` for matching AppID
+5. **Manifest Parsing**: Extracts installation details from ACF file
+6. **Folder Analysis**: Calculates actual folder size and structure
+7. **DLC Management**: Modifies Lua files to enable/disable depot updates
+8. **Report Generation**: Formats all data into readable text report
+
+## Testing Mode
+
+Enable testing mode with:
+- Command line: `LuaToolsGameChecker.exe -testing`
+- Keyboard shortcut: `Ctrl+Shift+T` while running
+
+Testing mode unlocks all steps for debugging without requiring sequential completion.
 
 ## Troubleshooting
 
 **"Steam installation not found"**
-- Ensure Steam is installed
-- Check that Steam registry keys exist
+- Ensure Steam is installed properly
+- Check Windows Registry for Steam keys
 
-**"Game with AppID X not found"**
-- Verify the AppID is correct
-- Ensure the game is installed in Steam
-- Try verifying game files in Steam first
+**"LuaTools directory not found"**
+- The `<Steam>\config\stplug-in` folder doesn't exist
+- Install the LuaTools plugin
 
-**".NET SDK not found"**
-- Install .NET 8.0 SDK from: https://dotnet.microsoft.com/download/dotnet/8.0
-- Or use Visual Studio 2022 to build
+**"No Lua files found"**
+- The stplug-in folder exists but contains no .lua files
+- Add a Lua configuration file from Sage Bot/Luie/plugin
+
+**"AppID not found in any Lua file"**
+- Lua files exist but none contain the specified AppID
+- Verify you have the correct Lua file for this game
+
+**"'morrenus' not found in Lua file"**
+- Invalid LuaTools configuration file
+- Refetch from Sage Bot, Luie, or the plugin
 
 ## Use Case
 
-This tool is designed to automate the collection of game installation information for support tickets, replacing the need for users to manually provide:
-- Screenshots of Lua files
-- Windows properties tab screenshots
-- Game folder screenshots
-- LuaTools update status screenshots
+This tool automates the collection of game installation information for support tickets, replacing manual screenshot capture. Users can:
+- Verify game installation status
+- Manage DLC update behavior
+- Capture DRM status screenshots
+- Generate comprehensive diagnostic reports
 
-Users simply enter the AppID, optionally select their Lua file, generate the report, and send the output text file to support.
+All output files are saved to `Documents\LuaTools Reports\<AppID>_<GameName>_<Timestamp>\`
+
+## Release Process
+
+See [RELEASE.md](RELEASE.md) for instructions on creating new releases.
 
 ## Author
 
