@@ -1,0 +1,395 @@
+<Window x:Class="LuaToolsGameChecker.ScreenshotWizard"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DRM Screenshot Wizard"
+        Height="650"
+        Width="800"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="50"
+                      ResizeBorderThickness="0"
+                      CornerRadius="12"
+                      GlassFrameThickness="0"
+                      UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Border Background="{StaticResource PrimaryDarkBrush}"
+            CornerRadius="12"
+            BorderBrush="{StaticResource SecondaryDarkBrush}"
+            BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20"
+                              ShadowDepth="0"
+                              Opacity="0.5"
+                              Color="Black"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title Bar -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    CornerRadius="12,12,0,0"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="20,0">
+                        <TextBlock Text="📸"
+                                   FontSize="20"
+                                   Margin="0,0,10,0"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="DRM Screenshot Wizard"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Button Width="46" Height="32"
+                            Background="Transparent"
+                            Foreground="{StaticResource TextPrimaryBrush}"
+                            BorderThickness="0"
+                            Content="✕"
+                            FontSize="14"
+                            Click="CloseButton_Click"
+                            Cursor="Hand"
+                            HorizontalAlignment="Right"
+                            Margin="0,0,15,0"
+                            WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    Width="46" Height="32">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#80FF0000"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Content -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="30">
+                    <TextBlock Text="Capture DRM Screenshots for Support"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Margin="0,0,0,20"/>
+
+                    <TextBlock TextWrapping="Wrap"
+                               FontSize="14"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,0,0,20">
+                        This wizard will help you capture the required screenshots for DRM support.
+                        You'll need to take 3 screenshots for your support ticket.
+                    </TextBlock>
+
+                    <!-- Screenshot 1 -->
+                    <Border Style="{StaticResource ModernCardStyle}"
+                            Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Screenshot 1: DRM Authorization Page"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       Margin="0,0,0,15"/>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                1. Open your browser and navigate to:
+                            </TextBlock>
+
+                            <Border Background="{StaticResource SecondaryDarkBrush}"
+                                    CornerRadius="6"
+                                    Padding="12,8"
+                                    Margin="0,0,0,10"
+                                    MouseLeftButtonDown="DrmLink_Click"
+                                    Cursor="Hand">
+                                <TextBlock Text="https://drm.steam.run/"
+                                           FontFamily="Consolas"
+                                           FontSize="14"
+                                           Foreground="{StaticResource AccentBrush}"
+                                           TextDecorations="Underline"/>
+                            </Border>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                2. Make sure you're logged in to your Steam account on that page.
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                3. <Bold>Keep ONLY the browser window open and visible.</Bold>
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                4. Click the capture button below - the app will minimize automatically.
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                5. Select <Bold>ONLY the authorization section</Bold> showing your username.
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FFB74D"
+                                       Margin="0,0,0,15">
+                                ⚠ IMPORTANT: Capture ONLY the authorization area with your username visible - not the entire page!
+                            </TextBlock>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock x:Name="lblScreenshot1Status"
+                                           Grid.Column="0"
+                                           Text="Not captured"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           VerticalAlignment="Center"/>
+
+                                <Button x:Name="btnCapture1"
+                                        Grid.Column="1"
+                                        Content="📸 Capture Screenshot"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Click="BtnCapture1_Click"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Screenshot 2 -->
+                    <Border Style="{StaticResource ModernCardStyle}"
+                            Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Screenshot 2: Steam Client"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       Margin="0,0,0,15"/>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                1. <Bold>Open your Steam client application.</Bold>
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                2. Click on your <Bold>account name</Bold> in the top-right corner.
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                3. Select <Bold>"Account Details"</Bold> from the dropdown menu.
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                4. <Bold>Keep the Account Details page open.</Bold>
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                5. Click the capture button below - the app will minimize automatically.
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                6. Select <Bold>ONLY the Account Details area</Bold> showing your username.
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FFB74D"
+                                       Margin="0,0,0,15">
+                                ⚠ IMPORTANT: Capture ONLY the Account Details with your username - not the entire Steam window!
+                            </TextBlock>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock x:Name="lblScreenshot2Status"
+                                           Grid.Column="0"
+                                           Text="Not captured"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           VerticalAlignment="Center"/>
+
+                                <Button x:Name="btnCapture2"
+                                        Grid.Column="1"
+                                        Content="📸 Capture Screenshot"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Click="BtnCapture2_Click"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Screenshot 3 -->
+                    <Border Style="{StaticResource ModernCardStyle}"
+                            Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Screenshot 3: Windows Update Blocker"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       Margin="0,0,0,15"/>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                1. Download Windows Update Blocker (WUB) from:
+                            </TextBlock>
+
+                            <Border Background="{StaticResource SecondaryDarkBrush}"
+                                    CornerRadius="6"
+                                    Padding="12,8"
+                                    Margin="0,0,0,10"
+                                    MouseLeftButtonDown="WubLink_Click"
+                                    Cursor="Hand">
+                                <TextBlock Text="https://www.sordum.org/downloads/?st-windows-update-blocker"
+                                           FontFamily="Consolas"
+                                           FontSize="13"
+                                           Foreground="{StaticResource AccentBrush}"
+                                           TextDecorations="Underline"
+                                           TextWrapping="Wrap"/>
+                            </Border>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                2. <Bold>Run WUB and click "Disable Service"</Bold> to disable Windows updates.
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                3. <Bold>Keep the WUB window open</Bold> showing the disabled status.
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                4. Click the capture button below - the app will minimize automatically.
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10">
+                                5. Select <Bold>ONLY the WUB status area</Bold> showing "Service is Disabled".
+                            </TextBlock>
+
+                            <TextBlock TextWrapping="Wrap"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FFB74D"
+                                       Margin="0,0,0,15">
+                                ⚠ IMPORTANT: Capture ONLY the status area showing disabled - not the entire WUB window!
+                            </TextBlock>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock x:Name="lblScreenshot3Status"
+                                           Grid.Column="0"
+                                           Text="Not captured"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           VerticalAlignment="Center"/>
+
+                                <Button x:Name="btnCapture3"
+                                        Grid.Column="1"
+                                        Content="📸 Capture Screenshot"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Click="BtnCapture3_Click"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Action Buttons -->
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Content="Open Screenshots Folder"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,15,0"
+                                Click="BtnOpenFolder_Click"/>
+
+                        <Button x:Name="btnFinish"
+                                Grid.Column="1"
+                                Content="✓ Finish"
+                                Style="{StaticResource SuccessButtonStyle}"
+                                MinWidth="120"
+                                IsEnabled="False"
+                                Click="BtnFinish_Click"/>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</Window>

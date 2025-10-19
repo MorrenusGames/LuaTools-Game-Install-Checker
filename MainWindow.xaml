@@ -1,0 +1,402 @@
+<Window x:Class="LuaToolsGameChecker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LuaTools - Game Install Checker"
+        Height="800"
+        Width="1000"
+        MinHeight="600"
+        MinWidth="800"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="50"
+                      ResizeBorderThickness="5"
+                      CornerRadius="12"
+                      GlassFrameThickness="0"
+                      UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Border Background="{StaticResource PrimaryDarkBrush}"
+            CornerRadius="12"
+            BorderBrush="{StaticResource SecondaryDarkBrush}"
+            BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20"
+                              ShadowDepth="0"
+                              Opacity="0.5"
+                              Color="Black"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <!-- Title Bar -->
+                <RowDefinition Height="*"/>
+                <!-- Content -->
+            </Grid.RowDefinitions>
+
+            <!-- Custom Title Bar -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    CornerRadius="12,12,0,0"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="20,0">
+                        <TextBlock Text="🎮"
+                                   FontSize="20"
+                                   Margin="0,0,10,0"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="LuaTools - Game Install Checker"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Window Controls -->
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Margin="0,0,15,0"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Button Width="46" Height="32"
+                                Background="Transparent"
+                                Foreground="{StaticResource TextPrimaryBrush}"
+                                BorderThickness="0"
+                                Content="_"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                Click="MinimizeButton_Click"
+                                Cursor="Hand"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        Width="46" Height="32">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Top"
+                                                                      Margin="0,-3,0,0"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#40FFFFFF"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button Width="46" Height="32"
+                                Background="Transparent"
+                                Foreground="{StaticResource TextPrimaryBrush}"
+                                BorderThickness="0"
+                                Content="□"
+                                FontSize="14"
+                                Click="MaximizeButton_Click"
+                                Cursor="Hand"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        Width="46" Height="32">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#40FFFFFF"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button Width="46" Height="32"
+                                Background="Transparent"
+                                Foreground="{StaticResource TextPrimaryBrush}"
+                                BorderThickness="0"
+                                Content="✕"
+                                FontSize="14"
+                                Click="CloseButton_Click"
+                                Cursor="Hand"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        Width="46" Height="32">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#80FF0000"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Main Content -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <Grid Margin="30">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Input Section -->
+                    <Border Grid.Row="0"
+                            Style="{StaticResource ModernCardStyle}"
+                            Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Step 1: Enter Game AppID"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Margin="0,0,0,20"/>
+
+                            <TextBlock Text="Steam AppID"
+                                       FontSize="14"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,8"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox x:Name="txtAppId"
+                                         Grid.Column="0"
+                                         Style="{StaticResource ModernTextBoxStyle}"
+                                         Text=""
+                                         Margin="0,0,15,0"/>
+
+                                <Button x:Name="btnLoadGame"
+                                        Grid.Column="1"
+                                        Content="✓ Load Game"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        MinWidth="150"
+                                        Click="BtnLoadGame_Click"/>
+                            </Grid>
+
+                            <!-- Game Info Display -->
+                            <Border x:Name="gameInfoPanel"
+                                    Background="{StaticResource SecondaryDarkBrush}"
+                                    CornerRadius="6"
+                                    Padding="12,8"
+                                    Margin="0,20,0,0"
+                                    Visibility="Collapsed">
+                                <StackPanel>
+                                    <TextBlock x:Name="lblGameName"
+                                               Text=""
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentBrush}"
+                                               Margin="0,0,0,5"/>
+                                    <TextBlock x:Name="lblLuaStatus"
+                                               Text=""
+                                               FontSize="11"
+                                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Actions Section -->
+                    <Border Grid.Row="1"
+                            Style="{StaticResource ModernCardStyle}"
+                            Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Support Workflow"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Margin="0,0,0,5"/>
+
+                            <TextBlock Text="Follow these steps in order:"
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,15"/>
+
+                            <!-- Step 2: Update Settings -->
+                            <Border Background="{StaticResource SecondaryDarkBrush}"
+                                    CornerRadius="6"
+                                    Padding="12"
+                                    Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="Step 2: Choose Update Setting"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentBrush}"
+                                               Margin="0,0,0,10"/>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Button x:Name="btnDisableDlc"
+                                                Grid.Column="0"
+                                                Content="🚫 Disable Updates"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Margin="0,0,7.5,0"
+                                                IsEnabled="False"
+                                                Click="BtnDisableDlc_Click"/>
+
+                                        <Button x:Name="btnEnableUpdates"
+                                                Grid.Column="1"
+                                                Content="✓ Enable Updates"
+                                                Style="{StaticResource SuccessButtonStyle}"
+                                                Margin="7.5,0,0,0"
+                                                IsEnabled="False"
+                                                Click="BtnEnableUpdates_Click"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Step 3: Reset Activation -->
+                            <Border Background="{StaticResource SecondaryDarkBrush}"
+                                    CornerRadius="6"
+                                    Padding="12"
+                                    Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="Step 3: Reset Activation"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentBrush}"
+                                               Margin="0,0,0,10"/>
+
+                                    <Button x:Name="btnRestartSteam"
+                                            Content="🔄 Reset Activation &amp; Restart Steam"
+                                            Style="{StaticResource DangerButtonStyle}"
+                                            IsEnabled="False"
+                                            Click="BtnRestartSteam_Click"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Step 4: Screenshots -->
+                            <Border Background="{StaticResource SecondaryDarkBrush}"
+                                    CornerRadius="6"
+                                    Padding="12"
+                                    Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="Step 4: Capture DRM Screenshots"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentBrush}"
+                                               Margin="0,0,0,10"/>
+
+                                    <Button x:Name="btnScreenshot"
+                                            Content="📸 Take DRM Screenshots"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            IsEnabled="False"
+                                            Click="BtnScreenshot_Click"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Step 5: Verify and Generate Report -->
+                            <Border Background="{StaticResource SecondaryDarkBrush}"
+                                    CornerRadius="6"
+                                    Padding="12"
+                                    Margin="0,0,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="Step 5: Verify &amp; Generate Report"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentBrush}"
+                                               Margin="0,0,0,10"/>
+
+                                    <Button x:Name="btnVerify"
+                                            Content="🔍 Verify &amp; Save Report"
+                                            Style="{StaticResource SuccessButtonStyle}"
+                                            IsEnabled="False"
+                                            Click="BtnVerify_Click"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Output Preview -->
+                    <Border Grid.Row="2"
+                            Style="{StaticResource ModernCardStyle}"
+                            Margin="0,0,0,20">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0"
+                                       Text="Output Preview"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Margin="0,0,0,15"/>
+
+                            <ScrollViewer Grid.Row="1"
+                                          VerticalScrollBarVisibility="Auto"
+                                          MinHeight="300"
+                                          MaxHeight="400">
+                                <TextBox x:Name="txtOutput"
+                                         Text="Ready. Enter a Steam AppID to begin verification."
+                                         Style="{StaticResource ModernTextBoxStyle}"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         VerticalScrollBarVisibility="Disabled"
+                                         IsReadOnly="True"
+                                         FontFamily="Consolas"
+                                         FontSize="11"
+                                         MinHeight="280"/>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+
+                    <!-- Status Bar -->
+                    <Border Grid.Row="3"
+                            Background="{StaticResource SecondaryDarkBrush}"
+                            CornerRadius="6"
+                            Padding="15,10">
+                        <TextBlock x:Name="lblStatus"
+                                   Text="Ready. Enter an AppID to begin."
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</Window>

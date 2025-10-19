@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Morrenus/Desktop/**)",
+      "Bash(powershell:*)",
+      "Read(//c/Program Files (x86)/Steam/steamapps/**)",
+      "Bash(dir:*)",
+      "Bash(dotnet build)",
+      "Bash(build.bat)",
+      "Read(//c/Morrenus Stuff/Solus Manifest App/**)",
+      "Read(//c/Program Files (x86)/Steam/config/stplug-in/**)",
+      "Bash(dotnet build:*)",
+      "Read(//c/Users/Morrenus/Documents/LuaTools Reports/3585800_Keep Digging_20251014_081708/**)",
+      "Bash(dotnet publish:*)",
+      "Bash(findstr:*)",
+      "Bash(cmd /c:*)",
+      "Bash(git init)",
+      "Bash(git add .)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
