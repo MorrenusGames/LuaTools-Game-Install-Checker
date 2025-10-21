@@ -32,6 +32,15 @@ jobs:
       run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       shell: bash
 
+    - name: Get tag message
+      id: tag_message
+      run: |
+        TAG_MESSAGE=$(git tag -l --format='%(contents)' ${{ github.ref_name }})
+        echo "TAG_MESSAGE<<EOF" >> $GITHUB_OUTPUT
+        echo "$TAG_MESSAGE" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+      shell: bash
+
     - name: Rename executable
       run: |
         cd publish
@@ -49,12 +58,9 @@ jobs:
         body: |
           ## LuaTools Game Install Checker v${{ steps.get_version.outputs.VERSION }}
 
-          **What's New:**
-          - Steam game verification tool
-          - DLC update management (Enable/Disable)
-          - Activation reset functionality
-          - DRM screenshot wizard
-          - Automated report generation
+          ${{ steps.tag_message.outputs.TAG_MESSAGE }}
+
+          ---
 
           **Installation:**
           1. Download `LuaToolsGameChecker-v${{ steps.get_version.outputs.VERSION }}.exe`
