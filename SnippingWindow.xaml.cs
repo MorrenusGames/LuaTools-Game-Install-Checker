@@ -30,6 +30,40 @@ namespace LuaToolsGameChecker
             this.Tag = screenCapture;
         }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Set window bounds to span all monitors
+            int minX = int.MaxValue;
+            int minY = int.MaxValue;
+            int maxX = int.MinValue;
+            int maxY = int.MinValue;
+
+            foreach (var screen in WinFormsScreen.AllScreens)
+            {
+                minX = Math.Min(minX, screen.Bounds.X);
+                minY = Math.Min(minY, screen.Bounds.Y);
+                maxX = Math.Max(maxX, screen.Bounds.Right);
+                maxY = Math.Max(maxY, screen.Bounds.Bottom);
+            }
+
+            // Get DPI scale to convert physical pixels to WPF DIPs
+            var source = PresentationSource.FromVisual(this);
+            double dpiScaleX = 1.0;
+            double dpiScaleY = 1.0;
+
+            if (source != null)
+            {
+                dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
+                dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
+            }
+
+            // Set window position and size in DIPs
+            this.Left = minX / dpiScaleX;
+            this.Top = minY / dpiScaleY;
+            this.Width = (maxX - minX) / dpiScaleX;
+            this.Height = (maxY - minY) / dpiScaleY;
+        }
+
         private void Window_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             startPoint = e.GetPosition(this.canvas);
@@ -95,20 +129,34 @@ namespace LuaToolsGameChecker
 
             try
             {
+                // Get DPI scale factor to convert WPF DIPs to physical pixels
+                var source = PresentationSource.FromVisual(this);
+                double dpiScaleX = 1.0;
+                double dpiScaleY = 1.0;
+
+                if (source != null)
+                {
+                    dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
+                    dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
+                }
+
                 var screenBitmap = this.Tag as System.Drawing.Bitmap;
                 if (screenBitmap != null)
                 {
-                    // Convert window coordinates to screen bitmap coordinates
-                    // Account for the screen offset (for multi-monitor setups)
-                    int screenX = (int)x - screenOffsetX;
-                    int screenY = (int)y - screenOffsetY;
+                    // Convert WPF DIPs to physical pixels AND account for screen offset
+                    // For multi-monitor: if offsetX is negative (left monitor), we need to ADD it
+                    // to shift the coordinates into the captured bitmap space
+                    int screenX = (int)(x * dpiScaleX) + screenOffsetX;
+                    int screenY = (int)(y * dpiScaleY) + screenOffsetY;
+                    int screenWidth = (int)(width * dpiScaleX);
+                    int screenHeight = (int)(height * dpiScaleY);
 
                     // Crop the bitmap to the selected area
                     var cropRect = new System.Drawing.Rectangle(
                         screenX,
                         screenY,
-                        (int)width,
-                        (int)height);
+                        screenWidth,
+                        screenHeight);
 
                     var croppedBitmap = screenBitmap.Clone(cropRect, screenBitmap.PixelFormat);
 

@@ -5,13 +5,13 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        WindowState="Maximized"
         Topmost="True"
         Cursor="Cross"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         MouseMove="Window_MouseMove"
         MouseLeftButtonUp="Window_MouseLeftButtonUp"
-        KeyDown="Window_KeyDown">
+        KeyDown="Window_KeyDown"
+        Loaded="Window_Loaded">
 
     <Canvas x:Name="canvas" Background="#40000000">
         <Rectangle x:Name="selectionRectangle"
