@@ -268,10 +268,41 @@ namespace LuaToolsGameChecker
 
                             System.Windows.MessageBox.Show(
                                 $"Morrenus files have been installed!\n\n" +
-                                $"The Lua file and manifest have been extracted to the correct locations.",
+                                $"The Lua file and manifest have been extracted to the correct locations.\n\n" +
+                                $"Steam will now be restarted to apply changes.",
                                 "Installation Complete",
                                 System.Windows.MessageBoxButton.OK,
                                 System.Windows.MessageBoxImage.Information);
+
+                            // Restart Steam
+                            UpdateStatus("Restarting Steam...", System.Windows.Media.Brushes.Orange);
+                            RestartSteam();
+
+                            // Prompt user to verify game files
+                            System.Windows.MessageBox.Show(
+                                $"Steam has been restarted.\n\n" +
+                                $"IMPORTANT: You must now verify game files through Steam:\n\n" +
+                                $"1. Right-click '{currentGameInfo.Name}' in your Steam library\n" +
+                                $"2. Select Properties → Installed Files\n" +
+                                $"3. Click 'Verify integrity of game files'\n" +
+                                $"4. Wait for verification to complete\n" +
+                                $"5. Click 'Yes' below when done",
+                                "Verify Game Files Required",
+                                System.Windows.MessageBoxButton.OK,
+                                System.Windows.MessageBoxImage.Information);
+
+                            // Wait for user confirmation
+                            var verifyResult = System.Windows.MessageBox.Show(
+                                "Have you completed the game file verification through Steam?",
+                                "Verification Complete?",
+                                System.Windows.MessageBoxButton.YesNo,
+                                System.Windows.MessageBoxImage.Question);
+
+                            if (verifyResult != System.Windows.MessageBoxResult.Yes)
+                            {
+                                UpdateStatus("⚠ Please verify game files before continuing.",
+                                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 152, 0)));
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -599,52 +630,18 @@ namespace LuaToolsGameChecker
                     UpdateStatus("✓ DLC updates disabled successfully.",
                         new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
 
+                    btnRestartSteam.IsEnabled = true;
+
                     System.Windows.MessageBox.Show(
                         $"Depot updates have been disabled!\n\n" +
                         $"Modified file: {currentLuaFile}\n\n" +
                         "All depot download lines have been commented out.\n" +
                         "setManifestid lines have been uncommented (version locked).\n" +
                         "Game and DLC will remain unlocked, but Steam won't download files.\n\n" +
-                        "Steam will now be restarted to apply changes.",
+                        "✓ Step 2 complete! Proceed to Step 3.",
                         "Success",
                         System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Information);
-
-                    // Restart Steam
-                    UpdateStatus("Restarting Steam...", System.Windows.Media.Brushes.Orange);
-                    RestartSteam();
-
-                    // Prompt user to verify game files
-                    System.Windows.MessageBox.Show(
-                        $"Steam has been restarted.\n\n" +
-                        $"IMPORTANT: You must now verify game files through Steam:\n\n" +
-                        $"1. Right-click '{currentGameInfo.Name}' in your Steam library\n" +
-                        $"2. Select Properties → Installed Files\n" +
-                        $"3. Click 'Verify integrity of game files'\n" +
-                        $"4. Wait for verification to complete\n" +
-                        $"5. Click 'Yes' below when done",
-                        "Verify Game Files Required",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Information);
-
-                    // Wait for user confirmation
-                    var verifyResult = System.Windows.MessageBox.Show(
-                        "Have you completed the game file verification through Steam?",
-                        "Verification Complete?",
-                        System.Windows.MessageBoxButton.YesNo,
-                        System.Windows.MessageBoxImage.Question);
-
-                    if (verifyResult == System.Windows.MessageBoxResult.Yes)
-                    {
-                        UpdateStatus("✓ Step 2 complete! Proceed to Step 3.",
-                            new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
-                        btnRestartSteam.IsEnabled = true;
-                    }
-                    else
-                    {
-                        UpdateStatus("⚠ Please verify game files before continuing.",
-                            new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 152, 0)));
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -701,52 +698,18 @@ namespace LuaToolsGameChecker
                     UpdateStatus("✓ Depot updates enabled successfully.",
                         new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
 
+                    btnRestartSteam.IsEnabled = true;
+
                     System.Windows.MessageBox.Show(
                         $"Depot updates have been enabled!\n\n" +
                         $"Modified file: {currentLuaFile}\n\n" +
                         "All depot download lines have been uncommented.\n" +
                         "setManifestid lines have been commented out (auto-update enabled).\n" +
                         "Steam will now be able to download and update game files.\n\n" +
-                        "Steam will now be restarted to apply changes.",
+                        "✓ Step 2 complete! Proceed to Step 3.",
                         "Success",
                         System.Windows.MessageBoxButton.OK,
                         System.Windows.MessageBoxImage.Information);
-
-                    // Restart Steam
-                    UpdateStatus("Restarting Steam...", System.Windows.Media.Brushes.Orange);
-                    RestartSteam();
-
-                    // Prompt user to verify game files
-                    System.Windows.MessageBox.Show(
-                        $"Steam has been restarted.\n\n" +
-                        $"IMPORTANT: You must now verify game files through Steam:\n\n" +
-                        $"1. Right-click '{currentGameInfo.Name}' in your Steam library\n" +
-                        $"2. Select Properties → Installed Files\n" +
-                        $"3. Click 'Verify integrity of game files'\n" +
-                        $"4. Wait for verification to complete\n" +
-                        $"5. Click 'Yes' below when done",
-                        "Verify Game Files Required",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Information);
-
-                    // Wait for user confirmation
-                    var verifyResult = System.Windows.MessageBox.Show(
-                        "Have you completed the game file verification through Steam?",
-                        "Verification Complete?",
-                        System.Windows.MessageBoxButton.YesNo,
-                        System.Windows.MessageBoxImage.Question);
-
-                    if (verifyResult == System.Windows.MessageBoxResult.Yes)
-                    {
-                        UpdateStatus("✓ Step 2 complete! Proceed to Step 3.",
-                            new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
-                        btnRestartSteam.IsEnabled = true;
-                    }
-                    else
-                    {
-                        UpdateStatus("⚠ Please verify game files before continuing.",
-                            new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 152, 0)));
-                    }
                 }
                 catch (Exception ex)
                 {
