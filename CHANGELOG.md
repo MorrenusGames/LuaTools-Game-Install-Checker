@@ -8,19 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.1] - 2025-10-27
 
 ### Added
-- Automatic Steam restart after Lua file modifications (Disable/Enable Updates)
-- Game file verification prompt with step-by-step instructions
-- User confirmation dialog to ensure verification is completed before continuing
+- Automatic Steam restart after downloading Morrenus files from API
+- Game file verification prompt with step-by-step instructions after Morrenus installation
+- User confirmation dialog to ensure verification is completed before continuing game load
 - RestartSteam() helper method for reliable Steam restart process
 
 ### Changed
-- Disable/Enable Updates workflow now includes mandatory Steam restart
-- User must manually verify game files through Steam after Lua changes
+- Morrenus download workflow now includes mandatory Steam restart
+- User must manually verify game files through Steam after Morrenus installation
 - Status messages updated to reflect new verification requirement
 
 ### Fixed
-- Improved reliability of Lua file modifications taking effect
-- Ensures game files are verified after configuration changes
+- Improved reliability of Morrenus Lua files being loaded by Steam
+- Ensures game files are verified after installing new Lua/manifest files from API
 
 ## [1.5.0] - 2025-10-27
 
