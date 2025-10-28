@@ -5,6 +5,23 @@ All notable changes to LuaTools Game Install Checker will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2025-10-27
+
+### Added
+- Automatic Steam restart after Lua file modifications (Disable/Enable Updates)
+- Game file verification prompt with step-by-step instructions
+- User confirmation dialog to ensure verification is completed before continuing
+- RestartSteam() helper method for reliable Steam restart process
+
+### Changed
+- Disable/Enable Updates workflow now includes mandatory Steam restart
+- User must manually verify game files through Steam after Lua changes
+- Status messages updated to reflect new verification requirement
+
+### Fixed
+- Improved reliability of Lua file modifications taking effect
+- Ensures game files are verified after configuration changes
+
 ## [1.5.0] - 2025-10-27
 
 ### Added
@@ -107,6 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Folder structure analysis
 - Game verification system
 
+[1.5.1]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.5.1
 [1.5.0]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.5.0
 [1.4.0]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.4.0
 [1.3.0]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.3.0
