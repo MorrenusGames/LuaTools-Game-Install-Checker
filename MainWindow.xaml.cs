@@ -292,8 +292,22 @@ namespace LuaToolsGameChecker
                     }
                     else
                     {
-                        UpdateStatus("⚠ Continuing without Morrenus files...",
-                            new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 152, 0)));
+                        // User declined download - fail the load process
+                        System.Windows.MessageBox.Show(
+                            $"Cannot proceed without Morrenus files.\n\n" +
+                            $"AppID {appId} requires Morrenus files to function properly.\n\n" +
+                            $"Please click \"Load Game\" again and accept the download,\n" +
+                            $"or obtain the files manually from:\n" +
+                            $"- Sage Bot\n" +
+                            $"- Luie\n" +
+                            $"- The plugin",
+                            "Morrenus Files Required",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Error);
+
+                        UpdateStatus("✗ Cannot load game without Morrenus files.",
+                            new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
+                        return;
                     }
                 }
 
