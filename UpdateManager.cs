@@ -10,7 +10,7 @@ namespace LuaToolsGameChecker
     public class UpdateManager
     {
         private const string GitHubReleaseUrl = "https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/latest/download/LuaToolsGameInstallChecker.exe";
-        private const string CurrentVersion = "1.5.0";
+        private const string CurrentVersion = "1.5.1";
 
         /// <summary>
         /// Checks if an update is available by comparing file sizes
