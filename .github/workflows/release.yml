@@ -41,13 +41,10 @@ jobs:
         echo "EOF" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Prepare executables
+    - name: Rename executable for release
       run: |
         cd publish
-        # Create versioned copy for manual download
-        Copy-Item -Path "LuaToolsGameChecker.exe" -Destination "LuaToolsGameChecker-v${{ steps.get_version.outputs.VERSION }}.exe"
-        # Create consistent name for auto-update
-        Copy-Item -Path "LuaToolsGameChecker.exe" -Destination "LuaToolsGameInstallChecker.exe"
+        Rename-Item -Path "LuaToolsGameChecker.exe" -NewName "LuaToolsGameInstallChecker.exe"
       shell: pwsh
 
     - name: Create Release
@@ -66,7 +63,7 @@ jobs:
           ---
 
           **Installation:**
-          1. Download `LuaToolsGameChecker-v${{ steps.get_version.outputs.VERSION }}.exe`
+          1. Download `LuaToolsGameInstallChecker.exe`
           2. Run the executable directly
 
           **Requirements:**
@@ -77,17 +74,7 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Upload Versioned Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./publish/LuaToolsGameChecker-v${{ steps.get_version.outputs.VERSION }}.exe
-        asset_name: LuaToolsGameChecker-v${{ steps.get_version.outputs.VERSION }}.exe
-        asset_content_type: application/octet-stream
-
-    - name: Upload Auto-Update Asset
+    - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
