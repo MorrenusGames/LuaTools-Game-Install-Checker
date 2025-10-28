@@ -64,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI updates from background threads via Dispatcher.Invoke()
 - In-memory caching of whitelist for performance
 
-## [1.4.0] - 2025-01-XX
+## [1.4.0] - 2025-10-21
 
 ### Fixed
 - DPI scaling bug causing "half screenshot" on 125%+ scaling
@@ -73,7 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Proper conversion of WPF DIPs to physical pixels in coordinate calculation
 - Support for all DPI scaling levels: 100%, 125%, 150%, 200%, 250%
 
-## [1.3.0] - 2025-01-XX
+## [1.3.0] - 2025-10-19
 
 ### Fixed
 - Fixed depot line commenting to preserve main app workshop keys
@@ -85,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Improved Lua file error messages
 
-## [1.2.0] - 2024-XX-XX
+## [1.2.0] - 2025-10-19
 
 ### Added
 - Initial public release
@@ -98,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated workflow to release compressed exe directly instead of zip archive
 - Generic paths in README instead of hardcoded user paths
 
-## [1.1.0] - 2024-XX-XX
+## [1.1.0] - 2025-10-14
 
 ### Added
 - Disable/Enable DLC updates functionality
