@@ -37,6 +37,7 @@ namespace LuaToolsGameChecker
                 using (var client = new HttpClient())
                 {
                     client.Timeout = TimeSpan.FromSeconds(120);
+                    client.DefaultRequestHeaders.Add("User-Agent", "Morrenus-Denuvo-Check");
 
                     var response = await client.GetAsync(downloadUrl);
 
