@@ -21,7 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Morrenus Auto-Download & Extraction**
   - Automatic detection when Morrenus files are missing for a game
   - One-click download prompt from `https://mellyiscoolaf.pythonanywhere.com/m/<appid>`
-  - Custom User-Agent header: `"Morrenus-Denuvo-Check"` for tracking
   - Auto-extraction to correct directories:
     - `.lua` files → `Steam\config\stplug-in\`
     - `.manifest` files → `Steam\depotcache\`
