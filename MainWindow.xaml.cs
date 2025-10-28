@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
+using System.Threading.Tasks;
 
 namespace LuaToolsGameChecker
 {
@@ -29,6 +30,124 @@ namespace LuaToolsGameChecker
                     this.Title += " [TESTING MODE]";
                     break;
                 }
+            }
+
+            // Initialize async features
+            this.Loaded += MainWindow_Loaded;
+        }
+
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Check for app updates
+            await CheckForAppUpdates();
+
+            // Auto-update whitelist if needed
+            await AutoUpdateWhitelist();
+        }
+
+        private async Task CheckForAppUpdates()
+        {
+            try
+            {
+                UpdateStatus("Checking for app updates...", System.Windows.Media.Brushes.Orange);
+
+                bool updateAvailable = await UpdateManager.IsUpdateAvailableAsync();
+
+                if (updateAvailable)
+                {
+                    var result = System.Windows.MessageBox.Show(
+                        $"A new version of LuaTools Game Install Checker is available!\n\n" +
+                        $"Current Version: {UpdateManager.GetCurrentVersion()}\n\n" +
+                        $"Would you like to download and install the update?\n\n" +
+                        $"The application will restart after the update.",
+                        "Update Available",
+                        System.Windows.MessageBoxButton.YesNo,
+                        System.Windows.MessageBoxImage.Information);
+
+                    if (result == System.Windows.MessageBoxResult.Yes)
+                    {
+                        UpdateStatus("Downloading update...", System.Windows.Media.Brushes.Orange);
+
+                        await UpdateManager.DownloadAndInstallUpdateAsync((progress) =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                UpdateStatus($"Downloading update... {progress}%", System.Windows.Media.Brushes.Orange);
+                            });
+                        });
+
+                        // Exit after starting the update process
+                        System.Windows.Application.Current.Shutdown();
+                    }
+                }
+                else
+                {
+                    UpdateStatus("Ready. Enter an AppID to begin.",
+                        new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
+                }
+            }
+            catch
+            {
+                // Silently fail update check
+                UpdateStatus("Ready. Enter an AppID to begin.",
+                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
+            }
+        }
+
+        private async Task AutoUpdateWhitelist()
+        {
+            try
+            {
+                if (WhitelistManager.NeedsUpdate())
+                {
+                    UpdateStatus("Updating Denuvo whitelist...", System.Windows.Media.Brushes.Orange);
+                    await WhitelistManager.UpdateWhitelistAsync();
+
+                    var count = WhitelistManager.GetWhitelistCount();
+                    UpdateStatus($"Whitelist updated ({count} games). Ready to verify games.",
+                        new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
+                }
+            }
+            catch
+            {
+                // Silently fail whitelist auto-update
+            }
+        }
+
+        private async void BtnUpdateWhitelist_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                btnUpdateWhitelist.IsEnabled = false;
+                UpdateStatus("Updating Denuvo whitelist...", System.Windows.Media.Brushes.Orange);
+
+                await WhitelistManager.UpdateWhitelistAsync(forceUpdate: true);
+
+                var count = WhitelistManager.GetWhitelistCount();
+                UpdateStatus($"✓ Whitelist updated! {count} Denuvo games supported.",
+                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
+
+                System.Windows.MessageBox.Show(
+                    $"Whitelist updated successfully!\n\n" +
+                    $"Total Denuvo games supported: {count}\n\n" +
+                    $"You can now verify any game on the whitelist.",
+                    "Whitelist Updated",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus("✗ Failed to update whitelist.",
+                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
+
+                System.Windows.MessageBox.Show($"Failed to update whitelist:\n\n{ex.Message}",
+                    "Update Failed",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+            }
+            finally
+            {
+                btnUpdateWhitelist.IsEnabled = true;
             }
         }
 
@@ -82,7 +201,7 @@ namespace LuaToolsGameChecker
         }
 
 
-        private void BtnLoadGame_Click(object sender, RoutedEventArgs e)
+        private async void BtnLoadGame_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtAppId.Text))
             {
@@ -93,11 +212,91 @@ namespace LuaToolsGameChecker
                 return;
             }
 
+            var appId = txtAppId.Text.Trim();
+
+            // Check whitelist first
+            if (!WhitelistManager.IsWhitelisted(appId))
+            {
+                System.Windows.MessageBox.Show(
+                    $"AppID {appId} is not on the Denuvo whitelist.\n\n" +
+                    $"Only Denuvo titles on the whitelist are supported.\n\n" +
+                    $"Click \"Update Whitelist\" to refresh the list and try again.",
+                    "Game Not Supported",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning);
+
+                UpdateStatus("✗ AppID not on Denuvo whitelist.",
+                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 152, 0)));
+                return;
+            }
+
             try
             {
                 UpdateStatus("Loading game information...", System.Windows.Media.Brushes.Orange);
 
-                currentGameInfo = SteamHelper.GetGameInfo(txtAppId.Text.Trim());
+                currentGameInfo = SteamHelper.GetGameInfo(appId);
+
+                // Check if Morrenus files exist
+                if (!MorrenusDownloader.MorrenusFilesExist(appId))
+                {
+                    var result = System.Windows.MessageBox.Show(
+                        $"Morrenus files not detected for {currentGameInfo.Name} (AppID: {appId}).\n\n" +
+                        $"Would you like to download and install them automatically?\n\n" +
+                        $"This will download:\n" +
+                        $"- Lua configuration files → Steam\\config\\stplug-in\n" +
+                        $"- Manifest files → Steam\\depotcache",
+                        "Morrenus Files Not Found",
+                        System.Windows.MessageBoxButton.YesNo,
+                        System.Windows.MessageBoxImage.Question);
+
+                    if (result == System.Windows.MessageBoxResult.Yes)
+                    {
+                        try
+                        {
+                            UpdateStatus("Downloading Morrenus files...", System.Windows.Media.Brushes.Orange);
+
+                            await MorrenusDownloader.DownloadAndExtractAsync(appId, (status) =>
+                            {
+                                Dispatcher.Invoke(() =>
+                                {
+                                    UpdateStatus(status, System.Windows.Media.Brushes.Orange);
+                                });
+                            });
+
+                            UpdateStatus("✓ Morrenus files installed successfully!",
+                                new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
+
+                            System.Windows.MessageBox.Show(
+                                $"Morrenus files have been installed!\n\n" +
+                                $"The Lua file and manifest have been extracted to the correct locations.",
+                                "Installation Complete",
+                                System.Windows.MessageBoxButton.OK,
+                                System.Windows.MessageBoxImage.Information);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Windows.MessageBox.Show(
+                                $"Failed to download Morrenus files:\n\n{ex.Message}\n\n" +
+                                $"You may need to manually obtain the files from:\n" +
+                                $"- Sage Bot\n" +
+                                $"- Luie\n" +
+                                $"- The plugin",
+                                "Download Failed",
+                                System.Windows.MessageBoxButton.OK,
+                                System.Windows.MessageBoxImage.Error);
+
+                            UpdateStatus("✗ Failed to download Morrenus files.",
+                                new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        UpdateStatus("⚠ Continuing without Morrenus files...",
+                            new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 152, 0)));
+                    }
+                }
+
                 currentLuaFile = SteamHelper.FindLuaFileForAppId(currentGameInfo.AppId);
 
                 lblGameName.Text = $"✓ {currentGameInfo.Name} (AppID: {currentGameInfo.AppId})";
@@ -127,7 +326,6 @@ namespace LuaToolsGameChecker
                 if (testingMode)
                 {
                     btnDisableDlc.IsEnabled = true;
-                    btnEnableUpdates.IsEnabled = true;
                     btnRestartSteam.IsEnabled = true;
                     btnScreenshot.IsEnabled = true;
                     btnVerify.IsEnabled = false;
@@ -137,7 +335,6 @@ namespace LuaToolsGameChecker
                 else
                 {
                     btnDisableDlc.IsEnabled = currentLuaFile != null;
-                    btnEnableUpdates.IsEnabled = currentLuaFile != null;
                     btnRestartSteam.IsEnabled = false;
                     btnScreenshot.IsEnabled = false;
                     btnVerify.IsEnabled = false;

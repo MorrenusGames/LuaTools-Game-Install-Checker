@@ -143,11 +143,13 @@ namespace LuaToolsGameChecker
                 var screenBitmap = this.Tag as System.Drawing.Bitmap;
                 if (screenBitmap != null)
                 {
-                    // Convert WPF DIPs to physical pixels AND account for screen offset
-                    // For multi-monitor: if offsetX is negative (left monitor), we need to ADD it
-                    // to shift the coordinates into the captured bitmap space
-                    int screenX = (int)(x * dpiScaleX) + screenOffsetX;
-                    int screenY = (int)(y * dpiScaleY) + screenOffsetY;
+                    // Convert WPF DIPs to physical pixels
+                    // The canvas position already accounts for the window's position in the global coordinate space,
+                    // and the bitmap starts at (0,0) representing the top-left of all monitors combined.
+                    // Therefore, we don't need to add screen offsets - the canvas position after DPI scaling
+                    // directly gives us the bitmap coordinates.
+                    int screenX = (int)(x * dpiScaleX);
+                    int screenY = (int)(y * dpiScaleY);
                     int screenWidth = (int)(width * dpiScaleX);
                     int screenHeight = (int)(height * dpiScaleY);
 

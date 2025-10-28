@@ -65,6 +65,44 @@
                                 VerticalAlignment="Center"
                                 Margin="0,0,15,0"
                                 WindowChrome.IsHitTestVisibleInChrome="True">
+
+                        <!-- Whitelist Update Button -->
+                        <Button x:Name="btnUpdateWhitelist"
+                                Width="140" Height="32"
+                                Background="#2196F3"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Content="🔄 Update Whitelist"
+                                FontSize="11"
+                                FontWeight="SemiBold"
+                                Click="BtnUpdateWhitelist_Click"
+                                Cursor="Hand"
+                                Margin="0,0,10,0"
+                                WindowChrome.IsHitTestVisibleInChrome="True">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="#2196F3"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="6"
+                                                        Padding="10,0">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#1976D2"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
                         <Button Width="46" Height="32"
                                 Background="Transparent"
                                 Foreground="{StaticResource TextPrimaryBrush}"
@@ -263,28 +301,11 @@
                                                Foreground="{StaticResource AccentBrush}"
                                                Margin="0,0,0,10"/>
 
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <Button x:Name="btnDisableDlc"
-                                                Grid.Column="0"
-                                                Content="🚫 Disable Updates"
-                                                Style="{StaticResource SecondaryButtonStyle}"
-                                                Margin="0,0,7.5,0"
-                                                IsEnabled="False"
-                                                Click="BtnDisableDlc_Click"/>
-
-                                        <Button x:Name="btnEnableUpdates"
-                                                Grid.Column="1"
-                                                Content="✓ Enable Updates"
-                                                Style="{StaticResource SuccessButtonStyle}"
-                                                Margin="7.5,0,0,0"
-                                                IsEnabled="False"
-                                                Click="BtnEnableUpdates_Click"/>
-                                    </Grid>
+                                    <Button x:Name="btnDisableDlc"
+                                            Content="🚫 Disable Updates"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            IsEnabled="False"
+                                            Click="BtnDisableDlc_Click"/>
                                 </StackPanel>
                             </Border>
 
