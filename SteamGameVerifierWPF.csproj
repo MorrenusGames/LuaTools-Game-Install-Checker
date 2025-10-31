@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>LuaToolsGameChecker</AssemblyName>
     <Product>LuaTools Game Install Checker</Product>
-    <Version>1.6.0</Version>
+    <Version>1.6.1</Version>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
