@@ -5,6 +5,34 @@ All notable changes to LuaTools Game Install Checker will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2025-10-31
+
+### Added
+- **Morrenus Signature Validation** - Enhanced file validation on every load
+  - Checks for specific signature comment: `-- {appId}'s Lua and Manifest Created by Morrenus`
+  - Validation occurs every time "Load Game" is clicked
+  - Prevents bypass attempts by validating actual file contents instead of flags
+  - User-friendly error messages that guide without exposing technical details
+
+### Changed
+- **Breaking**: Removed blocking verification flag system
+- **Simplified Verification Flow** - `steam://validate` runs automatically without user prompts
+  - No more "Did you verify?" confirmation dialogs
+  - Automatic background verification after Morrenus download
+  - Removed verification pending flags that could block users
+- Replaced all `MessageBox` calls with `CustomMessageBox` for UI consistency
+- Error messages now inform users about automatic download option
+
+### Removed
+- Verification flag blocking system (`.verification_pending_{appId}` files)
+- Manual verification confirmation prompts
+- Complex verification tracking logic
+
+### Fixed
+- Files without Morrenus signature are now properly detected and rejected on every load
+- Users cannot bypass validation by replacing Lua files with old versions
+- Cleaner verification workflow without unnecessary user interaction
+
 ## [1.6.0] - 2025-10-31
 
 ### Added
@@ -160,6 +188,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Folder structure analysis
 - Game verification system
 
+[1.6.1]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.6.1
 [1.6.0]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.6.0
 [1.5.1]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.5.1
 [1.5.0]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.5.0
