@@ -334,6 +334,225 @@ namespace SteamGameVerifier
 
             return sb.ToString();
         }
+
+        /// <summary>
+        /// Gets the ACF manifest file path for a specific AppID
+        /// </summary>
+        public static string? GetAcfFilePath(string appId)
+        {
+            try
+            {
+                var steamPath = GetSteamInstallPath();
+                if (steamPath == null)
+                    return null;
+
+                var libraries = GetSteamLibraries(steamPath);
+                var gameLibrary = FindGameLibrary(appId, libraries);
+
+                if (gameLibrary == null)
+                    return null;
+
+                return Path.Combine(gameLibrary, "steamapps", $"appmanifest_{appId}.acf");
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the LastUpdated timestamp from the ACF file
+        /// </summary>
+        public static long GetAcfLastUpdated(string appId)
+        {
+            try
+            {
+                var acfPath = GetAcfFilePath(appId);
+                if (acfPath == null || !File.Exists(acfPath))
+                    return 0;
+
+                var data = ParseAcfFile(acfPath);
+                if (data.ContainsKey("LastUpdated"))
+                {
+                    if (long.TryParse(data["LastUpdated"], out long timestamp))
+                        return timestamp;
+                }
+
+                return 0;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Gets the verification flag file path for a specific AppID
+        /// </summary>
+        private static string GetVerificationFlagPath(string appId)
+        {
+            var reportsDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "LuaTools Reports");
+
+            Directory.CreateDirectory(reportsDir);
+            return Path.Combine(reportsDir, $".verification_pending_{appId}");
+        }
+
+        /// <summary>
+        /// Creates a verification flag file with the current ACF timestamp
+        /// </summary>
+        public static void CreateVerificationFlag(string appId)
+        {
+            var flagPath = GetVerificationFlagPath(appId);
+            var timestamp = GetAcfLastUpdated(appId);
+            File.WriteAllText(flagPath, timestamp.ToString());
+        }
+
+        /// <summary>
+        /// Checks if a verification flag exists for the AppID
+        /// </summary>
+        public static bool VerificationFlagExists(string appId)
+        {
+            var flagPath = GetVerificationFlagPath(appId);
+            return File.Exists(flagPath);
+        }
+
+        /// <summary>
+        /// Checks if verification has been completed by comparing ACF timestamp
+        /// Returns true if verification is complete, false if still pending
+        /// </summary>
+        public static bool IsVerificationComplete(string appId)
+        {
+            var flagPath = GetVerificationFlagPath(appId);
+            if (!File.Exists(flagPath))
+                return true; // No flag means no verification pending
+
+            try
+            {
+                var flagContent = File.ReadAllText(flagPath);
+                if (long.TryParse(flagContent, out long originalTimestamp))
+                {
+                    var currentTimestamp = GetAcfLastUpdated(appId);
+                    // If timestamp changed, verification is complete
+                    return currentTimestamp > originalTimestamp;
+                }
+            }
+            catch
+            {
+                // If we can't read the flag, assume verification is needed
+                return false;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Deletes the verification flag file
+        /// </summary>
+        public static void DeleteVerificationFlag(string appId)
+        {
+            var flagPath = GetVerificationFlagPath(appId);
+            if (File.Exists(flagPath))
+            {
+                try
+                {
+                    File.Delete(flagPath);
+                }
+                catch
+                {
+                    // Silently fail if we can't delete
+                }
+            }
+        }
+
+        /// <summary>
+        /// Launches the Steam validation dialog for a specific AppID
+        /// </summary>
+        public static void LaunchSteamValidation(string appId)
+        {
+            try
+            {
+                var validateCommand = $"steam://validate/{appId}";
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = validateCommand,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to launch Steam validation: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Gets the download tracking file path for a specific AppID
+        /// </summary>
+        private static string GetDownloadTrackingPath(string appId)
+        {
+            var reportsDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "LuaTools Reports");
+
+            Directory.CreateDirectory(reportsDir);
+            return Path.Combine(reportsDir, $".dl_{appId}.dat");
+        }
+
+        /// <summary>
+        /// Records that Morrenus files were downloaded for an AppID
+        /// </summary>
+        public static void RecordMorrenusDownload(string appId)
+        {
+            var trackingPath = GetDownloadTrackingPath(appId);
+            var timestamp = GetAcfLastUpdated(appId);
+            File.WriteAllText(trackingPath, $"{timestamp}|0");
+        }
+
+        /// <summary>
+        /// Marks that verification was completed for an AppID
+        /// </summary>
+        public static void MarkVerificationCompleted(string appId)
+        {
+            var trackingPath = GetDownloadTrackingPath(appId);
+            if (File.Exists(trackingPath))
+            {
+                var parts = File.ReadAllText(trackingPath).Split('|');
+                if (parts.Length > 0)
+                {
+                    File.WriteAllText(trackingPath, $"{parts[0]}|1");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if Morrenus download was bypassed (downloaded but never verified)
+        /// </summary>
+        public static bool CheckBypassAttempt(string appId)
+        {
+            var trackingPath = GetDownloadTrackingPath(appId);
+            if (!File.Exists(trackingPath))
+                return false;
+
+            try
+            {
+                var data = File.ReadAllText(trackingPath);
+                var parts = data.Split('|');
+
+                if (parts.Length >= 2)
+                {
+                    var verified = parts[1];
+                    // If verified flag is "0", they bypassed verification
+                    return verified == "0";
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            return false;
+        }
     }
 
     /// <summary>

@@ -5,6 +5,42 @@ All notable changes to LuaTools Game Install Checker will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2025-10-31
+
+### Added
+- **Verification Enforcement System** - Mandatory Steam validation after Morrenus file installation
+  - Automatically triggers `steam://validate/<AppID>` dialog after Steam restart
+  - User confirms completion with Yes/No dialog
+  - Blocks application usage if verification is not completed
+  - Improved verification workflow reliability
+
+- **Startup Warning Dialog** - Report integrity policy shown when app opens
+  - Warns against faking/modifying reports or bypassing verification
+  - Permanent Denuvo activation loss consequence for fraudulent reports
+  - Clear acknowledgment required before using application
+
+- **Enhanced User Experience**
+  - Simplified verification instructions
+  - Clear blocking messages when verification is required
+  - "Be honest" reminder in confirmation dialogs
+  - Better status feedback during verification process
+
+### Changed
+- **Breaking**: Morrenus file installation now requires mandatory Steam validation
+- **Breaking**: Application blocks game loading if verification is pending
+- Trust-based verification confirmation (honor system)
+- Extended Steam initialization wait time from 5 to 8 seconds after restart
+- Improved message box formatting and clarity
+
+### Removed
+- Manual "verify through Steam" prompts without enforcement
+- Complex ACF timestamp monitoring (doesn't work reliably)
+
+### Fixed
+- Improved reliability of Steam validation workflow
+- Better enforcement of verification requirements
+- Cleaner namespace usage to avoid ambiguity
+
 ## [1.5.1] - 2025-10-27
 
 ### Added
@@ -124,6 +160,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Folder structure analysis
 - Game verification system
 
+[1.6.0]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.6.0
 [1.5.1]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.5.1
 [1.5.0]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.5.0
 [1.4.0]: https://github.com/MorrenusGames/LuaTools-Game-Install-Checker/releases/tag/v1.4.0

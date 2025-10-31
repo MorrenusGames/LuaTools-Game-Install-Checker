@@ -38,6 +38,28 @@ namespace LuaToolsGameChecker
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            // Show Denuvo warning on startup
+            System.Windows.MessageBox.Show(
+                "IMPORTANT - REPORT INTEGRITY WARNING\n\n" +
+                "This application generates verification reports that are\n" +
+                "submitted to support tickets for Denuvo game activation.\n\n" +
+                "WARNING:\n" +
+                "• Do NOT fake or modify reports\n" +
+                "• Do NOT bypass verification checks\n" +
+                "• Do NOT submit fraudulent information\n" +
+                "• All reports are monitored for integrity\n\n" +
+                "CONSEQUENCES:\n" +
+                "If you are found submitting fake reports or bypassing\n" +
+                "verification checks, you will suffer PERMANENT LOSS\n" +
+                "of ALL Denuvo activations on the server.\n\n" +
+                "This is irreversible and applies to ALL games.\n\n" +
+                "By using this application, you agree to submit only\n" +
+                "genuine, unmodified reports.\n\n" +
+                "Click OK to acknowledge and continue.",
+                "Report Integrity Policy - READ CAREFULLY",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Warning);
+
             // Check for app updates
             await CheckForAppUpdates();
 
@@ -214,6 +236,34 @@ namespace LuaToolsGameChecker
 
             var appId = txtAppId.Text.Trim();
 
+            // Check for pending verification FIRST
+            if (SteamHelper.VerificationFlagExists(appId))
+            {
+                // Verification is still pending - BLOCK
+                System.Windows.MessageBox.Show(
+                    $"⚠ VERIFICATION REQUIRED ⚠\n\n" +
+                    $"AppID {appId} has pending verification that must be completed.\n\n" +
+                    $"You downloaded Morrenus files for this game but did not\n" +
+                    $"complete the verification process.\n\n" +
+                    $"You MUST verify game files before continuing:\n\n" +
+                    $"1. Open Steam\n" +
+                    $"2. Right-click the game in your library\n" +
+                    $"3. Select Properties → Installed Files\n" +
+                    $"4. Click 'Verify integrity of game files'\n" +
+                    $"5. Wait for verification to complete\n" +
+                    $"6. Reload this game in the application\n\n" +
+                    $"⛔ WARNING ⛔\n" +
+                    $"Attempting to bypass this verification will result in\n" +
+                    $"permanent loss of ALL Denuvo activations on the server.",
+                    "Verification Pending - Cannot Continue",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+
+                UpdateStatus("✗ Verification required before loading game.",
+                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
+                return;
+            }
+
             // Check whitelist first
             if (!WhitelistManager.IsWhitelisted(appId))
             {
@@ -266,42 +316,101 @@ namespace LuaToolsGameChecker
                             UpdateStatus("✓ Morrenus files installed successfully!",
                                 new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
 
-                            System.Windows.MessageBox.Show(
-                                $"Morrenus files have been installed!\n\n" +
-                                $"The Lua file and manifest have been extracted to the correct locations.\n\n" +
-                                $"Steam will now be restarted to apply changes.",
-                                "Installation Complete",
-                                System.Windows.MessageBoxButton.OK,
-                                System.Windows.MessageBoxImage.Information);
+                            // Record Morrenus download and create verification flag
+                            SteamHelper.RecordMorrenusDownload(appId);
+                            SteamHelper.CreateVerificationFlag(appId);
 
                             // Restart Steam
                             UpdateStatus("Restarting Steam...", System.Windows.Media.Brushes.Orange);
                             RestartSteam();
 
-                            // Prompt user to verify game files
+                            UpdateStatus("Waiting for Steam to initialize...", System.Windows.Media.Brushes.Orange);
+                            await Task.Delay(8000); // Wait for Steam to fully start
+
+                            // Ask if Steam has started
+                            var steamStartedResult = System.Windows.MessageBox.Show(
+                                "Has Steam finished starting up?\n\n" +
+                                "Wait for Steam to be fully loaded before clicking Yes.\n\n" +
+                                "Click 'Yes' when Steam is ready.\n" +
+                                "Click 'No' if Steam is still loading (will wait longer).",
+                                "Steam Ready?",
+                                System.Windows.MessageBoxButton.YesNo,
+                                System.Windows.MessageBoxImage.Question);
+
+                            if (steamStartedResult == System.Windows.MessageBoxResult.No)
+                            {
+                                UpdateStatus("Waiting for Steam to finish starting...", System.Windows.Media.Brushes.Orange);
+                                await Task.Delay(5000); // Wait additional 5 seconds
+                            }
+
+                            // Launch validation dialog
+                            UpdateStatus("Launching Steam verification dialog...", System.Windows.Media.Brushes.Orange);
+                            SteamHelper.LaunchSteamValidation(appId);
+
+                            // Show verification instructions
                             System.Windows.MessageBox.Show(
-                                $"Steam has been restarted.\n\n" +
-                                $"IMPORTANT: You must now verify game files through Steam:\n\n" +
-                                $"1. Right-click '{currentGameInfo.Name}' in your Steam library\n" +
-                                $"2. Select Properties → Installed Files\n" +
-                                $"3. Click 'Verify integrity of game files'\n" +
-                                $"4. Wait for verification to complete\n" +
-                                $"5. Click 'Yes' below when done",
-                                "Verify Game Files Required",
+                                $"⚠ STEAM VERIFICATION REQUIRED ⚠\n\n" +
+                                $"Steam's verification dialog has been launched for '{currentGameInfo.Name}'.\n\n" +
+                                $"INSTRUCTIONS:\n" +
+                                $"• Click 'VERIFY' when Steam prompts you\n" +
+                                $"• Wait for verification to complete (may take several minutes)\n" +
+                                $"• Verification may download additional data\n" +
+                                $"• Do NOT click 'Cancel' or close the dialog\n\n" +
+                                $"Click OK, then complete the verification in Steam.",
+                                "Verification Required",
                                 System.Windows.MessageBoxButton.OK,
                                 System.Windows.MessageBoxImage.Information);
 
-                            // Wait for user confirmation
+                            // Wait for user to complete verification
+                            UpdateStatus("⏳ Waiting for you to complete verification...", System.Windows.Media.Brushes.Orange);
+
                             var verifyResult = System.Windows.MessageBox.Show(
-                                "Have you completed the game file verification through Steam?",
+                                $"Did you complete the Steam verification for '{currentGameInfo.Name}'?\n\n" +
+                                $"Click 'Yes' if verification completed successfully.\n" +
+                                $"Click 'No' if you cancelled or did not complete verification.\n\n" +
+                                $"⚠ Be honest - bypass attempts will be detected and reported.",
                                 "Verification Complete?",
                                 System.Windows.MessageBoxButton.YesNo,
                                 System.Windows.MessageBoxImage.Question);
 
-                            if (verifyResult != System.Windows.MessageBoxResult.Yes)
+                            if (verifyResult == System.Windows.MessageBoxResult.Yes)
                             {
-                                UpdateStatus("⚠ Please verify game files before continuing.",
-                                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 152, 0)));
+                                // User claims they completed verification
+                                SteamHelper.MarkVerificationCompleted(appId);
+                                SteamHelper.DeleteVerificationFlag(appId);
+                                UpdateStatus("✓ Verification complete!",
+                                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
+
+                                System.Windows.MessageBox.Show(
+                                    $"✓ Thank you for completing verification!\n\n" +
+                                    $"The Morrenus files for '{currentGameInfo.Name}' have been\n" +
+                                    $"installed and verified.\n\n" +
+                                    $"You can now proceed with using the game.",
+                                    "Verification Recorded",
+                                    System.Windows.MessageBoxButton.OK,
+                                    System.Windows.MessageBoxImage.Information);
+                            }
+                            else
+                            {
+                                // User did not complete verification
+                                System.Windows.MessageBox.Show(
+                                    $"⚠ VERIFICATION NOT COMPLETED ⚠\n\n" +
+                                    $"You cannot use this application until you verify '{currentGameInfo.Name}'.\n\n" +
+                                    $"To verify manually:\n" +
+                                    $"1. Open Steam\n" +
+                                    $"2. Right-click '{currentGameInfo.Name}' in your library\n" +
+                                    $"3. Select Properties → Installed Files\n" +
+                                    $"4. Click 'Verify integrity of game files'\n" +
+                                    $"5. Wait for completion\n" +
+                                    $"6. Restart this application and load the game again\n\n" +
+                                    $"The verification flag will remain until you complete this step.",
+                                    "Verification Required",
+                                    System.Windows.MessageBoxButton.OK,
+                                    System.Windows.MessageBoxImage.Error);
+
+                                UpdateStatus("✗ Verification not completed. Cannot continue.",
+                                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
+                                return;
                             }
                         }
                         catch (Exception ex)
@@ -533,6 +642,8 @@ namespace LuaToolsGameChecker
             sb.AppendLine("═══════════════════════════════════════════════════════════════");
             sb.AppendLine("          END OF REPORT - GENERATED BY LUATOOLS");
             sb.AppendLine("═══════════════════════════════════════════════════════════════");
+
+            sb.Append(SteamHelper.GetReportMetadata(gameInfo.AppId));
 
             return sb.ToString();
         }

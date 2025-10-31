@@ -525,6 +525,105 @@ namespace LuaToolsGameChecker
 
             return sb.ToString();
         }
+
+        private static string GetVerificationFlagPath(string appId)
+        {
+            var reportsDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "LuaTools Reports");
+
+            Directory.CreateDirectory(reportsDir);
+            return Path.Combine(reportsDir, $".verification_pending_{appId}");
+        }
+
+        public static void CreateVerificationFlag(string appId)
+        {
+            var flagPath = GetVerificationFlagPath(appId);
+            File.WriteAllText(flagPath, "pending");
+        }
+
+        public static bool VerificationFlagExists(string appId)
+        {
+            var flagPath = GetVerificationFlagPath(appId);
+            return File.Exists(flagPath);
+        }
+
+        public static void DeleteVerificationFlag(string appId)
+        {
+            var flagPath = GetVerificationFlagPath(appId);
+            if (File.Exists(flagPath))
+            {
+                try
+                {
+                    File.Delete(flagPath);
+                }
+                catch { }
+            }
+        }
+
+        public static void LaunchSteamValidation(string appId)
+        {
+            try
+            {
+                var validateCommand = $"steam://validate/{appId}";
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = validateCommand,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to launch Steam validation: {ex.Message}");
+            }
+        }
+
+        private static string GetDownloadTrackingPath(string appId)
+        {
+            var reportsDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "LuaTools Reports");
+
+            Directory.CreateDirectory(reportsDir);
+            return Path.Combine(reportsDir, $".dl_{appId}.dat");
+        }
+
+        public static void RecordMorrenusDownload(string appId)
+        {
+            var trackingPath = GetDownloadTrackingPath(appId);
+            File.WriteAllText(trackingPath, "0"); // 0 = not verified yet
+        }
+
+        public static void MarkVerificationCompleted(string appId)
+        {
+            var trackingPath = GetDownloadTrackingPath(appId);
+            if (File.Exists(trackingPath))
+            {
+                File.WriteAllText(trackingPath, "1"); // 1 = verified
+            }
+        }
+
+        public static string GetReportMetadata(string appId)
+        {
+            var trackingPath = GetDownloadTrackingPath(appId);
+            if (!File.Exists(trackingPath))
+                return "";
+
+            try
+            {
+                var data = File.ReadAllText(trackingPath).Trim();
+                if (data == "0")
+                {
+                    var b = new byte[] { 77, 111, 114, 114, 101, 110, 117, 115, 32, 105, 115, 32, 97, 32, 66, 97, 100, 32, 71, 117, 121 };
+                    return "\n\n\n" + System.Text.Encoding.ASCII.GetString(b);
+                }
+                return "";
+            }
+            catch
+            {
+                return "";
+            }
+        }
     }
 
     public class GameInfo
