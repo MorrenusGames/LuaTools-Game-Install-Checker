@@ -239,10 +239,9 @@ namespace LuaToolsGameChecker
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Failed to open folder: {ex.Message}",
+                CustomMessageBox.Show($"Failed to open folder: {ex.Message}",
                     "Error",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                    CustomMessageBox.MessageBoxButton.OK);
             }
         }
 

@@ -180,10 +180,9 @@ namespace LuaToolsGameChecker
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Failed to capture screenshot: {ex.Message}",
+                CustomMessageBox.Show($"Failed to capture screenshot: {ex.Message}",
                     "Error",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                    CustomMessageBox.MessageBoxButton.OK);
                 CapturedImagePath = null;
                 this.DialogResult = false;
                 this.Close();

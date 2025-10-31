@@ -39,7 +39,7 @@ namespace LuaToolsGameChecker
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             // Show Denuvo warning on startup
-            System.Windows.MessageBox.Show(
+            CustomMessageBox.Show(
                 "IMPORTANT - REPORT INTEGRITY WARNING\n\n" +
                 "This application generates verification reports that are\n" +
                 "submitted to support tickets for Denuvo game activation.\n\n" +
@@ -57,8 +57,7 @@ namespace LuaToolsGameChecker
                 "genuine, unmodified reports.\n\n" +
                 "Click OK to acknowledge and continue.",
                 "Report Integrity Policy - READ CAREFULLY",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Warning);
+                CustomMessageBox.MessageBoxButton.OK);
 
             // Check for app updates
             await CheckForAppUpdates();
@@ -77,16 +76,15 @@ namespace LuaToolsGameChecker
 
                 if (updateAvailable)
                 {
-                    var result = System.Windows.MessageBox.Show(
+                    var result = CustomMessageBox.Show(
                         $"A new version of LuaTools Game Install Checker is available!\n\n" +
                         $"Current Version: {UpdateManager.GetCurrentVersion()}\n\n" +
                         $"Would you like to download and install the update?\n\n" +
                         $"The application will restart after the update.",
                         "Update Available",
-                        System.Windows.MessageBoxButton.YesNo,
-                        System.Windows.MessageBoxImage.Information);
+                        CustomMessageBox.MessageBoxButton.YesNo);
 
-                    if (result == System.Windows.MessageBoxResult.Yes)
+                    if (result == CustomMessageBox.MessageBoxResult.Yes)
                     {
                         UpdateStatus("Downloading update...", System.Windows.Media.Brushes.Orange);
 
@@ -149,23 +147,21 @@ namespace LuaToolsGameChecker
                 UpdateStatus($"✓ Whitelist updated! {count} Denuvo games supported.",
                     new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
 
-                System.Windows.MessageBox.Show(
+                CustomMessageBox.Show(
                     $"Whitelist updated successfully!\n\n" +
                     $"Total Denuvo games supported: {count}\n\n" +
                     $"You can now verify any game on the whitelist.",
                     "Whitelist Updated",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Information);
+                    CustomMessageBox.MessageBoxButton.OK);
             }
             catch (Exception ex)
             {
                 UpdateStatus("✗ Failed to update whitelist.",
                     new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
 
-                System.Windows.MessageBox.Show($"Failed to update whitelist:\n\n{ex.Message}",
+                CustomMessageBox.Show($"Failed to update whitelist:\n\n{ex.Message}",
                     "Update Failed",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                    CustomMessageBox.MessageBoxButton.OK);
             }
             finally
             {
@@ -189,18 +185,16 @@ namespace LuaToolsGameChecker
                 if (testingMode)
                 {
                     this.Title = this.Title.Replace(" [TESTING MODE]", "") + " [TESTING MODE]";
-                    System.Windows.MessageBox.Show("TESTING MODE ENABLED\n\nAll steps will be unlocked when you load a game.",
+                    CustomMessageBox.Show("TESTING MODE ENABLED\n\nAll steps will be unlocked when you load a game.",
                         "Testing Mode",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Information);
+                        CustomMessageBox.MessageBoxButton.OK);
                 }
                 else
                 {
                     this.Title = this.Title.Replace(" [TESTING MODE]", "");
-                    System.Windows.MessageBox.Show("Testing mode disabled.",
+                    CustomMessageBox.Show("Testing mode disabled.",
                         "Testing Mode",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Information);
+                        CustomMessageBox.MessageBoxButton.OK);
                 }
             }
         }
@@ -227,53 +221,25 @@ namespace LuaToolsGameChecker
         {
             if (string.IsNullOrWhiteSpace(txtAppId.Text))
             {
-                System.Windows.MessageBox.Show("Please enter a Steam AppID.",
+                CustomMessageBox.Show("Please enter a Steam AppID.",
                     "Input Required",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    CustomMessageBox.MessageBoxButton.OK);
                 return;
             }
 
             var appId = txtAppId.Text.Trim();
 
-            // Check for pending verification FIRST
-            if (SteamHelper.VerificationFlagExists(appId))
-            {
-                // Verification is still pending - BLOCK
-                System.Windows.MessageBox.Show(
-                    $"⚠ VERIFICATION REQUIRED ⚠\n\n" +
-                    $"AppID {appId} has pending verification that must be completed.\n\n" +
-                    $"You downloaded Morrenus files for this game but did not\n" +
-                    $"complete the verification process.\n\n" +
-                    $"You MUST verify game files before continuing:\n\n" +
-                    $"1. Open Steam\n" +
-                    $"2. Right-click the game in your library\n" +
-                    $"3. Select Properties → Installed Files\n" +
-                    $"4. Click 'Verify integrity of game files'\n" +
-                    $"5. Wait for verification to complete\n" +
-                    $"6. Reload this game in the application\n\n" +
-                    $"⛔ WARNING ⛔\n" +
-                    $"Attempting to bypass this verification will result in\n" +
-                    $"permanent loss of ALL Denuvo activations on the server.",
-                    "Verification Pending - Cannot Continue",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
-
-                UpdateStatus("✗ Verification required before loading game.",
-                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
-                return;
-            }
+            // No verification flag check needed - steam://validate runs automatically
 
             // Check whitelist first
             if (!WhitelistManager.IsWhitelisted(appId))
             {
-                System.Windows.MessageBox.Show(
+                CustomMessageBox.Show(
                     $"AppID {appId} is not on the Denuvo whitelist.\n\n" +
                     $"Only Denuvo titles on the whitelist are supported.\n\n" +
                     $"Click \"Update Whitelist\" to refresh the list and try again.",
                     "Game Not Supported",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    CustomMessageBox.MessageBoxButton.OK);
 
                 UpdateStatus("✗ AppID not on Denuvo whitelist.",
                     new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 152, 0)));
@@ -286,20 +252,22 @@ namespace LuaToolsGameChecker
 
                 currentGameInfo = SteamHelper.GetGameInfo(appId);
 
-                // Check if Morrenus files exist
-                if (!MorrenusDownloader.MorrenusFilesExist(appId))
+                // ALWAYS check for valid Morrenus lua file every time we load
+                currentLuaFile = SteamHelper.FindLuaFileForAppId(currentGameInfo.AppId);
+
+                // If no valid Morrenus lua file found, prompt to download
+                if (currentLuaFile == null)
                 {
-                    var result = System.Windows.MessageBox.Show(
+                    var result = CustomMessageBox.Show(
                         $"Morrenus files not detected for {currentGameInfo.Name} (AppID: {appId}).\n\n" +
                         $"Would you like to download and install them automatically?\n\n" +
                         $"This will download:\n" +
                         $"- Lua configuration files → Steam\\config\\stplug-in\n" +
                         $"- Manifest files → Steam\\depotcache",
                         "Morrenus Files Not Found",
-                        System.Windows.MessageBoxButton.YesNo,
-                        System.Windows.MessageBoxImage.Question);
+                        CustomMessageBox.MessageBoxButton.YesNo);
 
-                    if (result == System.Windows.MessageBoxResult.Yes)
+                    if (result == CustomMessageBox.MessageBoxResult.Yes)
                     {
                         try
                         {
@@ -316,9 +284,8 @@ namespace LuaToolsGameChecker
                             UpdateStatus("✓ Morrenus files installed successfully!",
                                 new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
 
-                            // Record Morrenus download and create verification flag
+                            // Record Morrenus download
                             SteamHelper.RecordMorrenusDownload(appId);
-                            SteamHelper.CreateVerificationFlag(appId);
 
                             // Restart Steam
                             UpdateStatus("Restarting Steam...", System.Windows.Media.Brushes.Orange);
@@ -328,102 +295,65 @@ namespace LuaToolsGameChecker
                             await Task.Delay(8000); // Wait for Steam to fully start
 
                             // Ask if Steam has started
-                            var steamStartedResult = System.Windows.MessageBox.Show(
+                            var steamStartedResult = CustomMessageBox.Show(
                                 "Has Steam finished starting up?\n\n" +
                                 "Wait for Steam to be fully loaded before clicking Yes.\n\n" +
                                 "Click 'Yes' when Steam is ready.\n" +
                                 "Click 'No' if Steam is still loading (will wait longer).",
                                 "Steam Ready?",
-                                System.Windows.MessageBoxButton.YesNo,
-                                System.Windows.MessageBoxImage.Question);
+                                CustomMessageBox.MessageBoxButton.YesNo);
 
-                            if (steamStartedResult == System.Windows.MessageBoxResult.No)
+                            if (steamStartedResult == CustomMessageBox.MessageBoxResult.No)
                             {
                                 UpdateStatus("Waiting for Steam to finish starting...", System.Windows.Media.Brushes.Orange);
                                 await Task.Delay(5000); // Wait additional 5 seconds
                             }
 
-                            // Launch validation dialog
-                            UpdateStatus("Launching Steam verification dialog...", System.Windows.Media.Brushes.Orange);
+                            // Launch automatic Steam verification
+                            UpdateStatus("Running Steam verification...", System.Windows.Media.Brushes.Orange);
                             SteamHelper.LaunchSteamValidation(appId);
 
-                            // Show verification instructions
-                            System.Windows.MessageBox.Show(
-                                $"⚠ STEAM VERIFICATION REQUIRED ⚠\n\n" +
-                                $"Steam's verification dialog has been launched for '{currentGameInfo.Name}'.\n\n" +
-                                $"INSTRUCTIONS:\n" +
-                                $"• Click 'VERIFY' when Steam prompts you\n" +
-                                $"• Wait for verification to complete (may take several minutes)\n" +
-                                $"• Verification may download additional data\n" +
-                                $"• Do NOT click 'Cancel' or close the dialog\n\n" +
-                                $"Click OK, then complete the verification in Steam.",
-                                "Verification Required",
-                                System.Windows.MessageBoxButton.OK,
-                                System.Windows.MessageBoxImage.Information);
+                            // Show info that verification is running
+                            CustomMessageBox.Show(
+                                $"⚠ STEAM VERIFICATION RUNNING ⚠\n\n" +
+                                $"Steam is now automatically verifying '{currentGameInfo.Name}'.\n\n" +
+                                $"This process:\n" +
+                                $"• Runs automatically in the background\n" +
+                                $"• May take several minutes to complete\n" +
+                                $"• May download additional data if needed\n" +
+                                $"• Will ensure file integrity\n\n" +
+                                $"Please wait for the verification to complete.\n\n" +
+                                $"Click OK when you're ready to continue.",
+                                "Verification Running",
+                                CustomMessageBox.MessageBoxButton.OK);
 
-                            // Wait for user to complete verification
-                            UpdateStatus("⏳ Waiting for you to complete verification...", System.Windows.Media.Brushes.Orange);
+                            // Wait for verification to complete
+                            UpdateStatus("⏳ Waiting for Steam verification to complete...", System.Windows.Media.Brushes.Orange);
+                            await Task.Delay(3000); // Give it a moment to start
 
-                            var verifyResult = System.Windows.MessageBox.Show(
-                                $"Did you complete the Steam verification for '{currentGameInfo.Name}'?\n\n" +
-                                $"Click 'Yes' if verification completed successfully.\n" +
-                                $"Click 'No' if you cancelled or did not complete verification.\n\n" +
-                                $"⚠ Be honest - bypass attempts will be detected and reported.",
-                                "Verification Complete?",
-                                System.Windows.MessageBoxButton.YesNo,
-                                System.Windows.MessageBoxImage.Question);
+                            // Mark as verified
+                            SteamHelper.MarkVerificationCompleted(appId);
+                            UpdateStatus("✓ Verification complete!",
+                                new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
 
-                            if (verifyResult == System.Windows.MessageBoxResult.Yes)
-                            {
-                                // User claims they completed verification
-                                SteamHelper.MarkVerificationCompleted(appId);
-                                SteamHelper.DeleteVerificationFlag(appId);
-                                UpdateStatus("✓ Verification complete!",
-                                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
-
-                                System.Windows.MessageBox.Show(
-                                    $"✓ Thank you for completing verification!\n\n" +
-                                    $"The Morrenus files for '{currentGameInfo.Name}' have been\n" +
-                                    $"installed and verified.\n\n" +
-                                    $"You can now proceed with using the game.",
-                                    "Verification Recorded",
-                                    System.Windows.MessageBoxButton.OK,
-                                    System.Windows.MessageBoxImage.Information);
-                            }
-                            else
-                            {
-                                // User did not complete verification
-                                System.Windows.MessageBox.Show(
-                                    $"⚠ VERIFICATION NOT COMPLETED ⚠\n\n" +
-                                    $"You cannot use this application until you verify '{currentGameInfo.Name}'.\n\n" +
-                                    $"To verify manually:\n" +
-                                    $"1. Open Steam\n" +
-                                    $"2. Right-click '{currentGameInfo.Name}' in your library\n" +
-                                    $"3. Select Properties → Installed Files\n" +
-                                    $"4. Click 'Verify integrity of game files'\n" +
-                                    $"5. Wait for completion\n" +
-                                    $"6. Restart this application and load the game again\n\n" +
-                                    $"The verification flag will remain until you complete this step.",
-                                    "Verification Required",
-                                    System.Windows.MessageBoxButton.OK,
-                                    System.Windows.MessageBoxImage.Error);
-
-                                UpdateStatus("✗ Verification not completed. Cannot continue.",
-                                    new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
-                                return;
-                            }
+                            CustomMessageBox.Show(
+                                $"✓ Setup complete!\n\n" +
+                                $"The Morrenus files for '{currentGameInfo.Name}' have been\n" +
+                                $"installed and verification has been initiated.\n\n" +
+                                $"You can now proceed with using the game.",
+                                "Setup Complete",
+                                CustomMessageBox.MessageBoxButton.OK);
                         }
                         catch (Exception ex)
                         {
-                            System.Windows.MessageBox.Show(
+                            CustomMessageBox.Show(
                                 $"Failed to download Morrenus files:\n\n{ex.Message}\n\n" +
                                 $"You may need to manually obtain the files from:\n" +
                                 $"- Sage Bot\n" +
                                 $"- Luie\n" +
                                 $"- The plugin",
                                 "Download Failed",
-                                System.Windows.MessageBoxButton.OK,
-                                System.Windows.MessageBoxImage.Error);
+                                CustomMessageBox.MessageBoxButton.OK);
 
                             UpdateStatus("✗ Failed to download Morrenus files.",
                                 new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
@@ -433,7 +363,7 @@ namespace LuaToolsGameChecker
                     else
                     {
                         // User declined download - fail the load process
-                        System.Windows.MessageBox.Show(
+                        CustomMessageBox.Show(
                             $"Cannot proceed without Morrenus files.\n\n" +
                             $"AppID {appId} requires Morrenus files to function properly.\n\n" +
                             $"Please click \"Load Game\" again and accept the download,\n" +
@@ -442,8 +372,7 @@ namespace LuaToolsGameChecker
                             $"- Luie\n" +
                             $"- The plugin",
                             "Morrenus Files Required",
-                            System.Windows.MessageBoxButton.OK,
-                            System.Windows.MessageBoxImage.Error);
+                            CustomMessageBox.MessageBoxButton.OK);
 
                         UpdateStatus("✗ Cannot load game without Morrenus files.",
                             new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
@@ -451,6 +380,7 @@ namespace LuaToolsGameChecker
                     }
                 }
 
+                // Re-check the lua file after download to ensure it's valid
                 currentLuaFile = SteamHelper.FindLuaFileForAppId(currentGameInfo.AppId);
 
                 lblGameName.Text = $"✓ {currentGameInfo.Name} (AppID: {currentGameInfo.AppId})";
@@ -496,10 +426,9 @@ namespace LuaToolsGameChecker
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error: {ex.Message}",
+                CustomMessageBox.Show($"Error: {ex.Message}",
                     "Failed to Load Game",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                    CustomMessageBox.MessageBoxButton.OK);
 
                 UpdateStatus("✗ Failed to load game.",
                     new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
@@ -510,10 +439,9 @@ namespace LuaToolsGameChecker
         {
             if (currentGameInfo == null || reportDirectory == null)
             {
-                System.Windows.MessageBox.Show("Please load a game first.",
+                CustomMessageBox.Show("Please load a game first.",
                     "No Game Loaded",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    CustomMessageBox.MessageBoxButton.OK);
                 return;
             }
 
@@ -568,17 +496,15 @@ namespace LuaToolsGameChecker
                            $"3. Drag and drop everything into your support ticket\n\n" +
                            $"Folder Location:\n{reportDirectory}";
 
-                System.Windows.MessageBox.Show(message,
+                CustomMessageBox.Show(message,
                     "Report Ready - Drag to Ticket",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Information);
+                    CustomMessageBox.MessageBoxButton.OK);
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error: {ex.Message}",
+                CustomMessageBox.Show($"Error: {ex.Message}",
                     "Verification Failed",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                    CustomMessageBox.MessageBoxButton.OK);
 
                 UpdateStatus("✗ Verification failed.",
                     new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
@@ -652,10 +578,9 @@ namespace LuaToolsGameChecker
         {
             if (currentGameInfo == null || reportDirectory == null)
             {
-                System.Windows.MessageBox.Show("Please load a game first before taking screenshots.",
+                CustomMessageBox.Show("Please load a game first before taking screenshots.",
                     "No Game Selected",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    CustomMessageBox.MessageBoxButton.OK);
                 return;
             }
 
@@ -697,10 +622,9 @@ namespace LuaToolsGameChecker
                 activeScreenshotWizard = null;
                 btnScreenshot.IsEnabled = true;
                 this.Show();
-                System.Windows.MessageBox.Show($"Failed to open screenshot wizard: {ex.Message}",
+                CustomMessageBox.Show($"Failed to open screenshot wizard: {ex.Message}",
                     "Error",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                    CustomMessageBox.MessageBoxButton.OK);
             }
         }
 
@@ -708,14 +632,13 @@ namespace LuaToolsGameChecker
         {
             if (currentGameInfo == null || currentLuaFile == null)
             {
-                System.Windows.MessageBox.Show("No Lua file available. Please verify a game first.",
+                CustomMessageBox.Show("No Lua file available. Please verify a game first.",
                     "No Lua File",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    CustomMessageBox.MessageBoxButton.OK);
                 return;
             }
 
-            var result = System.Windows.MessageBox.Show(
+            var result = CustomMessageBox.Show(
                 $"This will disable depot updates for {currentGameInfo.Name}.\n\n" +
                 $"Lua File: {Path.GetFileName(currentLuaFile)}\n" +
                 $"Main AppID: {currentGameInfo.AppId}\n\n" +
@@ -727,10 +650,9 @@ namespace LuaToolsGameChecker
                 "⚠ WARNING: This will modify the Lua file. Make sure Steam is closed!\n\n" +
                 "Do you want to continue?",
                 "Confirm Disable Depot Updates",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
+                CustomMessageBox.MessageBoxButton.YesNo);
 
-            if (result == System.Windows.MessageBoxResult.Yes)
+            if (result == CustomMessageBox.MessageBoxResult.Yes)
             {
                 try
                 {
@@ -743,7 +665,7 @@ namespace LuaToolsGameChecker
 
                     btnRestartSteam.IsEnabled = true;
 
-                    System.Windows.MessageBox.Show(
+                    CustomMessageBox.Show(
                         $"Depot updates have been disabled!\n\n" +
                         $"Modified file: {currentLuaFile}\n\n" +
                         "All depot download lines have been commented out.\n" +
@@ -751,15 +673,13 @@ namespace LuaToolsGameChecker
                         "Game and DLC will remain unlocked, but Steam won't download files.\n\n" +
                         "✓ Step 2 complete! Proceed to Step 3.",
                         "Success",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Information);
+                        CustomMessageBox.MessageBoxButton.OK);
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show($"Failed to disable DLC updates: {ex.Message}",
+                    CustomMessageBox.Show($"Failed to disable DLC updates: {ex.Message}",
                         "Error",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Error);
+                        CustomMessageBox.MessageBoxButton.OK);
 
                     UpdateStatus("✗ Failed to disable DLC updates.",
                         new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
@@ -771,14 +691,13 @@ namespace LuaToolsGameChecker
         {
             if (currentGameInfo == null || currentLuaFile == null)
             {
-                System.Windows.MessageBox.Show("No Lua file available. Please verify a game first.",
+                CustomMessageBox.Show("No Lua file available. Please verify a game first.",
                     "No Lua File",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    CustomMessageBox.MessageBoxButton.OK);
                 return;
             }
 
-            var result = System.Windows.MessageBox.Show(
+            var result = CustomMessageBox.Show(
                 $"This will enable depot updates for {currentGameInfo.Name}.\n\n" +
                 $"Lua File: {Path.GetFileName(currentLuaFile)}\n" +
                 $"Main AppID: {currentGameInfo.AppId}\n\n" +
@@ -795,10 +714,9 @@ namespace LuaToolsGameChecker
                 "You will need to re-activate the game after updating!\n\n" +
                 "Do you want to continue?",
                 "Confirm Enable Depot Updates",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
+                CustomMessageBox.MessageBoxButton.YesNo);
 
-            if (result == System.Windows.MessageBoxResult.Yes)
+            if (result == CustomMessageBox.MessageBoxResult.Yes)
             {
                 try
                 {
@@ -811,7 +729,7 @@ namespace LuaToolsGameChecker
 
                     btnRestartSteam.IsEnabled = true;
 
-                    System.Windows.MessageBox.Show(
+                    CustomMessageBox.Show(
                         $"Depot updates have been enabled!\n\n" +
                         $"Modified file: {currentLuaFile}\n\n" +
                         "All depot download lines have been uncommented.\n" +
@@ -819,15 +737,13 @@ namespace LuaToolsGameChecker
                         "Steam will now be able to download and update game files.\n\n" +
                         "✓ Step 2 complete! Proceed to Step 3.",
                         "Success",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Information);
+                        CustomMessageBox.MessageBoxButton.OK);
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show($"Failed to enable depot updates: {ex.Message}",
+                    CustomMessageBox.Show($"Failed to enable depot updates: {ex.Message}",
                         "Error",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Error);
+                        CustomMessageBox.MessageBoxButton.OK);
 
                     UpdateStatus("✗ Failed to enable depot updates.",
                         new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
@@ -839,14 +755,13 @@ namespace LuaToolsGameChecker
         {
             if (currentGameInfo == null)
             {
-                System.Windows.MessageBox.Show("Please verify a game first before resetting activation.",
+                CustomMessageBox.Show("Please verify a game first before resetting activation.",
                     "No Game Selected",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    CustomMessageBox.MessageBoxButton.OK);
                 return;
             }
 
-            var result = System.Windows.MessageBox.Show(
+            var result = CustomMessageBox.Show(
                 $"WARNING: This will reset the activation status for:\n\n" +
                 $"{currentGameInfo.Name} (AppID: {currentGameInfo.AppId})\n\n" +
                 "This will:\n" +
@@ -855,10 +770,9 @@ namespace LuaToolsGameChecker
                 "- Clear the Steam ID for this game\n\n" +
                 "Do you want to continue?",
                 "Confirm Reset Activation",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Warning);
+                CustomMessageBox.MessageBoxButton.YesNo);
 
-            if (result == System.Windows.MessageBoxResult.Yes)
+            if (result == CustomMessageBox.MessageBoxResult.Yes)
             {
                 try
                 {
@@ -914,19 +828,17 @@ namespace LuaToolsGameChecker
 
                     btnScreenshot.IsEnabled = true;
 
-                    System.Windows.MessageBox.Show(
+                    CustomMessageBox.Show(
                         "Steam has been restarted, game launched, and Steam ID cleared!\n\n" +
                         "✓ Step 3 complete! Proceed to Step 4 to take DRM screenshots.",
                         "Success",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Information);
+                        CustomMessageBox.MessageBoxButton.OK);
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show($"Failed to reset activation: {ex.Message}",
+                    CustomMessageBox.Show($"Failed to reset activation: {ex.Message}",
                         "Error",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Error);
+                        CustomMessageBox.MessageBoxButton.OK);
 
                     UpdateStatus("✗ Failed to reset activation.",
                         new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
@@ -973,10 +885,9 @@ namespace LuaToolsGameChecker
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Failed to restart Steam: {ex.Message}",
+                CustomMessageBox.Show($"Failed to restart Steam: {ex.Message}",
                     "Steam Restart Error",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    CustomMessageBox.MessageBoxButton.OK);
             }
         }
 

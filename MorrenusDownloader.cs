@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace LuaToolsGameChecker
@@ -122,8 +123,8 @@ namespace LuaToolsGameChecker
                     try
                     {
                         var content = File.ReadAllText(luaFile);
-                        if (content.Contains("morrenus", StringComparison.OrdinalIgnoreCase) &&
-                            content.Contains(appId))
+                        // Check for Morrenus signature: "-- <appid>'s Lua and Manifest Created by Morrenus"
+                        if (Regex.IsMatch(content, $@"--\s*{appId}'s\s+Lua\s+and\s+Manifest\s+Created\s+by\s+Morrenus", RegexOptions.IgnoreCase))
                         {
                             return true;
                         }

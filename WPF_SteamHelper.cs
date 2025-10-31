@@ -279,27 +279,25 @@ namespace LuaToolsGameChecker
                 var steamPath = GetSteamInstallPath();
                 if (steamPath == null)
                 {
-                    System.Windows.MessageBox.Show(
+                    CustomMessageBox.Show(
                         "ERROR: Steam installation path not found!\n\n" +
                         "Could not locate Steam installation in registry.\n\n" +
                         "Please ensure Steam is properly installed.",
                         "Steam Path Not Found",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Error);
+                        CustomMessageBox.MessageBoxButton.OK);
                     return null;
                 }
 
                 var luaFolder = Path.Combine(steamPath, "config", "stplug-in");
                 if (!Directory.Exists(luaFolder))
                 {
-                    System.Windows.MessageBox.Show(
+                    CustomMessageBox.Show(
                         $"ERROR: LuaTools directory not found!\n\n" +
                         $"Expected path: {luaFolder}\n\n" +
                         $"The 'stplug-in' folder does not exist.\n\n" +
                         $"Please install LuaTools plugin in Steam.",
                         "LuaTools Directory Not Found",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Error);
+                        CustomMessageBox.MessageBoxButton.OK);
                     return null;
                 }
 
@@ -307,7 +305,7 @@ namespace LuaToolsGameChecker
 
                 if (luaFiles.Length == 0)
                 {
-                    System.Windows.MessageBox.Show(
+                    CustomMessageBox.Show(
                         $"ERROR: No Lua files found!\n\n" +
                         $"Directory exists: {luaFolder}\n\n" +
                         $"But no .lua files were found inside.\n\n" +
@@ -316,8 +314,7 @@ namespace LuaToolsGameChecker
                         $"- Luie\n" +
                         $"- The plugin",
                         "No Lua Files Found",
-                        System.Windows.MessageBoxButton.OK,
-                        System.Windows.MessageBoxImage.Error);
+                        CustomMessageBox.MessageBoxButton.OK);
                     return null;
                 }
 
@@ -326,7 +323,8 @@ namespace LuaToolsGameChecker
                     try
                     {
                         var content = File.ReadAllText(luaFile);
-                        if (Regex.IsMatch(content, $@"(^|[\r\n])\s*(--\s*)?addappid\s*\(\s*[""']?{appId}[""']?\s*[,\)]", RegexOptions.IgnoreCase | RegexOptions.Multiline))
+                        // Check for Morrenus signature: "-- <appid>'s Lua and Manifest Created by Morrenus"
+                        if (Regex.IsMatch(content, $@"--\s*{appId}'s\s+Lua\s+and\s+Manifest\s+Created\s+by\s+Morrenus", RegexOptions.IgnoreCase))
                         {
                             return luaFile;
                         }
@@ -337,23 +335,21 @@ namespace LuaToolsGameChecker
                     }
                 }
 
-                System.Windows.MessageBox.Show(
-                    $"ERROR: AppID {appId} not found in any Lua file!\n\n" +
-                    $"Found {luaFiles.Length} Lua file(s) in:\n{luaFolder}\n\n" +
-                    $"But none contain addappid({appId})\n\n" +
-                    $"Please ensure you have the correct Lua file for this game.",
-                    "AppID Not Found in Lua Files",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                CustomMessageBox.Show(
+                    $"ERROR: Valid Morrenus Lua file not found for AppID {appId}!\n\n" +
+                    $"No valid Morrenus files detected.\n\n" +
+                    $"The next popup will prompt you to download them automatically,\n" +
+                    $"or you can choose 'No' to install them manually.",
+                    "Valid Morrenus File Not Found",
+                    CustomMessageBox.MessageBoxButton.OK);
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(
+                CustomMessageBox.Show(
                     $"ERROR: Unexpected error while searching for Lua file!\n\n" +
                     $"Error: {ex.Message}",
                     "Lua Search Error",
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                    CustomMessageBox.MessageBoxButton.OK);
             }
 
             return null;
