@@ -608,13 +608,11 @@ namespace LuaToolsGameChecker
             var sb = new StringBuilder();
 
             sb.AppendLine("═══════════════════════════════════════════════════════════════");
-            sb.AppendLine("   LUATOOLS - STEAM GAME INSTALLATION VERIFICATION REPORT");
-            sb.AppendLine($"                        Version {UpdateManager.GetCurrentVersion()}");
+            sb.AppendLine($"       LUATOOLS - INSTALLATION REPORT (v{UpdateManager.GetCurrentVersion()})");
             sb.AppendLine("═══════════════════════════════════════════════════════════════");
             sb.AppendLine();
             sb.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-            sb.AppendLine($"AppID: {gameInfo.AppId}");
-            sb.AppendLine($"Game Name: {gameInfo.Name}");
+            sb.AppendLine($"Game: {gameInfo.Name} (AppID: {gameInfo.AppId})");
             sb.AppendLine();
             sb.AppendLine("───────────────────────────────────────────────────────────────");
             sb.AppendLine("INSTALLATION DETAILS");
@@ -664,7 +662,43 @@ namespace LuaToolsGameChecker
 
             sb.Append(SteamHelper.GetReportMetadata(gameInfo.AppId));
 
+            // Add machine identifier for tracking
+            sb.AppendLine();
+            sb.AppendLine($"Machine ID: {GetMachineIdentifier()}");
+
             return sb.ToString();
+        }
+
+        private string GetMachineIdentifier()
+        {
+            try
+            {
+                // Store the machine ID in AppData
+                var appDataPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "LuaTools");
+                var machineIdFile = Path.Combine(appDataPath, ".machine_id");
+
+                // If ID already exists, read and return it
+                if (File.Exists(machineIdFile))
+                {
+                    return File.ReadAllText(machineIdFile).Trim();
+                }
+
+                // Generate new unique ID
+                var machineId = Guid.NewGuid().ToString("N").Substring(0, 16).ToUpper();
+
+                // Save it for future use
+                Directory.CreateDirectory(appDataPath);
+                File.WriteAllText(machineIdFile, machineId);
+
+                return machineId;
+            }
+            catch
+            {
+                // Fallback to a session-only ID if file operations fail
+                return Guid.NewGuid().ToString("N").Substring(0, 16).ToUpper();
+            }
         }
 
         private async void BtnScreenshot_Click(object sender, RoutedEventArgs e)
