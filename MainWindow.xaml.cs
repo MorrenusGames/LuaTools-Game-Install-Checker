@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
@@ -251,6 +252,25 @@ namespace LuaToolsGameChecker
                 UpdateStatus("Loading game information...", System.Windows.Media.Brushes.Orange);
 
                 currentGameInfo = SteamHelper.GetGameInfo(appId);
+
+                // Check if game is actually installed (SizeOnDisk > 0)
+                if (currentGameInfo.SizeOnDisk == "0")
+                {
+                    CustomMessageBox.Show(
+                        $"ERROR: Game Not Fully Installed!\n\n" +
+                        $"Game: {currentGameInfo.Name}\n" +
+                        $"AppID: {appId}\n\n" +
+                        $"The game is not installed or has no files on disk.\n" +
+                        $"(SizeOnDisk = 0 bytes)\n\n" +
+                        $"Please fully install the game in Steam first,\n" +
+                        $"then run this tool again.",
+                        "Game Not Installed",
+                        CustomMessageBox.MessageBoxButton.OK);
+
+                    UpdateStatus("✗ Game not installed (SizeOnDisk = 0)",
+                        new SolidColorBrush(System.Windows.Media.Color.FromRgb(244, 67, 54)));
+                    return;
+                }
 
                 // ALWAYS check for valid Morrenus lua file every time we load
                 currentLuaFile = SteamHelper.FindLuaFileForAppId(currentGameInfo.AppId);
@@ -842,6 +862,250 @@ namespace LuaToolsGameChecker
 
                     UpdateStatus("✗ Failed to reset activation.",
                         new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
+                }
+            }
+        }
+
+        private void BtnClearSteamId_Click(object sender, RoutedEventArgs e)
+        {
+            // Create a simple input dialog using CustomMessageBox
+            var inputDialog = new Window
+            {
+                Title = "Clear SteamID",
+                Width = 400,
+                Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                ResizeMode = ResizeMode.NoResize,
+                Background = System.Windows.Media.Brushes.Transparent,
+                WindowStyle = WindowStyle.None,
+                AllowsTransparency = true
+            };
+
+            var border = new Border
+            {
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(42, 71, 94)), // CardBackgroundBrush
+                BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(102, 192, 244)), // AccentBrush
+                BorderThickness = new Thickness(2),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(20)
+            };
+
+            border.Effect = new System.Windows.Media.Effects.DropShadowEffect
+            {
+                BlurRadius = 20,
+                ShadowDepth = 0,
+                Opacity = 0.5,
+                Color = System.Windows.Media.Colors.Black
+            };
+
+            var stackPanel = new StackPanel();
+
+            var titleText = new TextBlock
+            {
+                Text = "Enter Game AppID to Clear SteamID",
+                FontSize = 14,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(199, 213, 224)), // TextPrimaryBrush
+                Margin = new Thickness(0, 0, 0, 15),
+                TextAlignment = TextAlignment.Center
+            };
+
+            var appIdTextBox = new System.Windows.Controls.TextBox
+            {
+                Width = 300,
+                Height = 32,
+                FontSize = 14,
+                Padding = new Thickness(12, 10, 12, 10),
+                Margin = new Thickness(0, 0, 0, 15),
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 52, 73)), // TextBox background from theme
+                Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(199, 213, 224)), // TextPrimaryBrush
+                BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(21, 33, 45)), // TextBox border from theme
+                BorderThickness = new Thickness(1),
+                VerticalContentAlignment = System.Windows.VerticalAlignment.Center,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+            };
+
+            // Apply rounded corners template to TextBox
+            var textBoxTemplate = new ControlTemplate(typeof(System.Windows.Controls.TextBox));
+            var textBoxBorder = new FrameworkElementFactory(typeof(Border));
+            textBoxBorder.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(System.Windows.Controls.TextBox.BackgroundProperty));
+            textBoxBorder.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(System.Windows.Controls.TextBox.BorderBrushProperty));
+            textBoxBorder.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(System.Windows.Controls.TextBox.BorderThicknessProperty));
+            textBoxBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
+            var scrollViewer = new FrameworkElementFactory(typeof(ScrollViewer));
+            scrollViewer.SetValue(FrameworkElement.NameProperty, "PART_ContentHost");
+            scrollViewer.SetValue(FrameworkElement.MarginProperty, new TemplateBindingExtension(System.Windows.Controls.TextBox.PaddingProperty));
+            scrollViewer.SetValue(ScrollViewer.VerticalAlignmentProperty, System.Windows.VerticalAlignment.Center);
+            textBoxBorder.AppendChild(scrollViewer);
+            textBoxTemplate.VisualTree = textBoxBorder;
+            appIdTextBox.Template = textBoxTemplate;
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = System.Windows.Controls.Orientation.Horizontal,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+            };
+
+            var okButton = new System.Windows.Controls.Button
+            {
+                Content = "OK",
+                Width = 100,
+                Height = 32,
+                Margin = new Thickness(0, 0, 10, 0),
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(102, 192, 244)), // AccentBrush
+                Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 255, 255)),
+                BorderThickness = new Thickness(0),
+                Cursor = System.Windows.Input.Cursors.Hand
+            };
+
+            // Apply rounded corners template to OK button
+            var okTemplate = new ControlTemplate(typeof(System.Windows.Controls.Button));
+            var okBorder = new FrameworkElementFactory(typeof(Border));
+            okBorder.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(System.Windows.Controls.Button.BackgroundProperty));
+            okBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
+            okBorder.SetValue(Border.PaddingProperty, new Thickness(10, 0, 10, 0));
+            var okContent = new FrameworkElementFactory(typeof(ContentPresenter));
+            okContent.SetValue(ContentPresenter.HorizontalAlignmentProperty, System.Windows.HorizontalAlignment.Center);
+            okContent.SetValue(ContentPresenter.VerticalAlignmentProperty, System.Windows.VerticalAlignment.Center);
+            okBorder.AppendChild(okContent);
+            okTemplate.VisualTree = okBorder;
+            okButton.Template = okTemplate;
+
+            var cancelButton = new System.Windows.Controls.Button
+            {
+                Content = "Cancel",
+                Width = 100,
+                Height = 32,
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(27, 40, 56)), // SecondaryDarkBrush
+                Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(199, 213, 224)), // TextPrimaryBrush
+                BorderThickness = new Thickness(0),
+                Cursor = System.Windows.Input.Cursors.Hand
+            };
+
+            // Apply rounded corners template to Cancel button
+            var cancelTemplate = new ControlTemplate(typeof(System.Windows.Controls.Button));
+            var cancelBorder = new FrameworkElementFactory(typeof(Border));
+            cancelBorder.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(System.Windows.Controls.Button.BackgroundProperty));
+            cancelBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
+            cancelBorder.SetValue(Border.PaddingProperty, new Thickness(10, 0, 10, 0));
+            var cancelContent = new FrameworkElementFactory(typeof(ContentPresenter));
+            cancelContent.SetValue(ContentPresenter.HorizontalAlignmentProperty, System.Windows.HorizontalAlignment.Center);
+            cancelContent.SetValue(ContentPresenter.VerticalAlignmentProperty, System.Windows.VerticalAlignment.Center);
+            cancelBorder.AppendChild(cancelContent);
+            cancelTemplate.VisualTree = cancelBorder;
+            cancelButton.Template = cancelTemplate;
+
+            okButton.Click += (s, args) => { inputDialog.DialogResult = true; inputDialog.Close(); };
+            cancelButton.Click += (s, args) => { inputDialog.DialogResult = false; inputDialog.Close(); };
+
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            stackPanel.Children.Add(titleText);
+            stackPanel.Children.Add(appIdTextBox);
+            stackPanel.Children.Add(buttonPanel);
+
+            border.Child = stackPanel;
+            inputDialog.Content = border;
+
+            var result = inputDialog.ShowDialog();
+
+            if (result == true && !string.IsNullOrWhiteSpace(appIdTextBox.Text))
+            {
+                string appId = appIdTextBox.Text.Trim();
+
+                // Validate AppID is numeric
+                if (!System.Text.RegularExpressions.Regex.IsMatch(appId, @"^\d+$"))
+                {
+                    CustomMessageBox.Show(
+                        "Invalid AppID! Please enter a numeric Steam AppID.",
+                        "Invalid Input",
+                        CustomMessageBox.MessageBoxButton.OK);
+                    return;
+                }
+
+                // Show confirmation dialog
+                var confirmResult = CustomMessageBox.Show(
+                    $"WARNING: This will reset the activation for AppID {appId}\n\n" +
+                    "This will:\n" +
+                    "- Kill all Steam processes\n" +
+                    "- Restart Steam\n" +
+                    "- Attempt to launch the game once\n" +
+                    "- Clear the Steam ID for this game\n\n" +
+                    "Do you want to continue?",
+                    "Confirm Clear SteamID",
+                    CustomMessageBox.MessageBoxButton.YesNo);
+
+                if (confirmResult == CustomMessageBox.MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        UpdateStatus("Restarting Steam...", System.Windows.Media.Brushes.Orange);
+
+                        // Kill Steam processes
+                        var steamProcesses = System.Diagnostics.Process.GetProcessesByName("steam");
+                        foreach (var process in steamProcesses)
+                        {
+                            try
+                            {
+                                process.Kill();
+                                process.WaitForExit(5000);
+                            }
+                            catch { }
+                        }
+
+                        System.Threading.Thread.Sleep(2000);
+
+                        // Restart Steam
+                        var steamPath = SteamHelper.GetSteamInstallPath();
+                        if (steamPath != null)
+                        {
+                            var steamExe = Path.Combine(steamPath, "steam.exe");
+                            if (File.Exists(steamExe))
+                            {
+                                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                                {
+                                    FileName = steamExe,
+                                    UseShellExecute = true
+                                });
+                            }
+                        }
+
+                        UpdateStatus("✓ Steam restarted. Waiting for Steam to initialize...", System.Windows.Media.Brushes.Orange);
+                        System.Threading.Thread.Sleep(5000);
+
+                        UpdateStatus("✓ Attempting to launch game...", System.Windows.Media.Brushes.Orange);
+                        SteamHelper.TryLaunchGame(appId);
+                        System.Threading.Thread.Sleep(3000);
+
+                        UpdateStatus("✓ Clearing Steam ID for this game...", System.Windows.Media.Brushes.Orange);
+
+                        var clearCommand = $"steam://run/tool/clearsteamid/{appId}";
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = clearCommand,
+                            UseShellExecute = true
+                        });
+
+                        System.Threading.Thread.Sleep(2000);
+
+                        UpdateStatus("✓ Clear SteamID complete.",
+                            new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
+
+                        CustomMessageBox.Show(
+                            $"Steam has been restarted, game launched, and Steam ID cleared for AppID {appId}!",
+                            "Success",
+                            CustomMessageBox.MessageBoxButton.OK);
+                    }
+                    catch (Exception ex)
+                    {
+                        CustomMessageBox.Show($"Failed to clear SteamID: {ex.Message}",
+                            "Error",
+                            CustomMessageBox.MessageBoxButton.OK);
+
+                        UpdateStatus("✗ Failed to clear SteamID.",
+                            new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 87, 34)));
+                    }
                 }
             }
         }

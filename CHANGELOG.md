@@ -5,6 +5,41 @@ All notable changes to LuaTools Game Install Checker will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2025-11-05
+
+### Added
+- **SizeOnDisk Validation** - Pre-flight check for game installation status
+  - Validates game is actually installed before allowing operations
+  - Checks ACF file `SizeOnDisk` field (0 = not installed)
+  - Shows clear error message when game has no files on disk
+  - Prevents user confusion from operating on uninstalled games
+  - Status indicator shows "Game not installed (SizeOnDisk = 0)"
+
+- **Clear SteamID Button** - Standalone activation reset tool
+  - New button in title bar next to "Update Whitelist"
+  - Allows clearing Steam ID without loading a game first
+  - Prompts for AppID input with validation
+  - Performs same activation reset as "Reset Activation" button
+  - Fully themed to match application design
+  - Workflow:
+    - Kills Steam processes
+    - Restarts Steam
+    - Launches game once
+    - Clears Steam ID using `steam://run/tool/clearsteamid/{appId}`
+
+### Changed
+- Game loading now validates installation status before proceeding
+- Clear SteamID functionality available independently of game load workflow
+- Input dialog styling matches Steam-inspired theme perfectly
+  - CardBackgroundBrush with AccentBrush border
+  - Rounded corners (6px) on all elements
+  - Proper text and button centering
+  - Drop shadow effects
+
+### Fixed
+- Users can no longer attempt operations on games that aren't installed
+- Prevented potential errors from missing game files
+
 ## [1.6.1] - 2025-10-31
 
 ### Added
