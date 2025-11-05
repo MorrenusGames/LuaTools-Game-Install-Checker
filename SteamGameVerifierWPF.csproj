@@ -8,7 +8,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>LuaToolsGameChecker</AssemblyName>
     <Product>LuaTools Game Install Checker</Product>
-    <Version>1.7.0</Version>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
@@ -16,6 +15,19 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
+
+  <!-- Auto-version from git tags -->
+  <Target Name="GetVersionFromGit" BeforeTargets="BeforeBuild">
+    <Exec Command="powershell -ExecutionPolicy Bypass -File &quot;$(ProjectDir)GetVersionFromGit.ps1&quot;" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitVersion" />
+    </Exec>
+    <PropertyGroup>
+      <Version>$(GitVersion)</Version>
+      <AssemblyVersion>$(GitVersion)</AssemblyVersion>
+      <FileVersion>$(GitVersion)</FileVersion>
+    </PropertyGroup>
+    <Message Text="Building version $(Version) from git tag" Importance="high" />
+  </Target>
 
   <ItemGroup>
     <!-- Exclude WinForms files from WPF build -->

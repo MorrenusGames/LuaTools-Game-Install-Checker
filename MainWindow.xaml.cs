@@ -15,6 +15,7 @@ namespace LuaToolsGameChecker
         private GameInfo? currentGameInfo;
         private string? currentLuaFile;
         private string? reportDirectory;
+        private bool updateRequired = false;
         private bool testingMode = false;
         private ScreenshotWizard? activeScreenshotWizard = null;
 
@@ -77,28 +78,27 @@ namespace LuaToolsGameChecker
 
                 if (updateAvailable)
                 {
+                    updateRequired = true;
+                    DisableAllControls();
+
+                    UpdateStatus("⚠ MANDATORY UPDATE REQUIRED - Click 'Update Now' to continue",
+                        System.Windows.Media.Brushes.Red);
+
+                    // Show mandatory update notification
                     var result = CustomMessageBox.Show(
-                        $"A new version of LuaTools Game Install Checker is available!\n\n" +
+                        $"MANDATORY UPDATE REQUIRED\n\n" +
+                        $"A new version of LuaTools Game Install Checker is available.\n\n" +
                         $"Current Version: {UpdateManager.GetCurrentVersion()}\n\n" +
-                        $"Would you like to download and install the update?\n\n" +
-                        $"The application will restart after the update.",
-                        "Update Available",
+                        $"You cannot use this application until you update.\n\n" +
+                        $"Click 'Yes' to download and install the update now.\n" +
+                        $"Click 'No' to close this dialog (app will remain disabled).\n\n" +
+                        $"The application will restart after the update completes.",
+                        "Mandatory Update Required",
                         CustomMessageBox.MessageBoxButton.YesNo);
 
                     if (result == CustomMessageBox.MessageBoxResult.Yes)
                     {
-                        UpdateStatus("Downloading update...", System.Windows.Media.Brushes.Orange);
-
-                        await UpdateManager.DownloadAndInstallUpdateAsync((progress) =>
-                        {
-                            Dispatcher.Invoke(() =>
-                            {
-                                UpdateStatus($"Downloading update... {progress}%", System.Windows.Media.Brushes.Orange);
-                            });
-                        });
-
-                        // Exit after starting the update process
-                        System.Windows.Application.Current.Shutdown();
+                        await PerformUpdate();
                     }
                 }
                 else
@@ -112,6 +112,66 @@ namespace LuaToolsGameChecker
                 // Silently fail update check
                 UpdateStatus("Ready. Enter an AppID to begin.",
                     new SolidColorBrush(System.Windows.Media.Color.FromRgb(139, 195, 74)));
+            }
+        }
+
+        private async Task PerformUpdate()
+        {
+            try
+            {
+                UpdateStatus("Downloading mandatory update...", System.Windows.Media.Brushes.Orange);
+
+                await UpdateManager.DownloadAndInstallUpdateAsync((progress) =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        UpdateStatus($"Downloading mandatory update... {progress}%", System.Windows.Media.Brushes.Orange);
+                    });
+                });
+
+                // Exit after starting the update process
+                System.Windows.Application.Current.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                CustomMessageBox.Show(
+                    $"Failed to download update:\n\n{ex.Message}\n\n" +
+                    $"Please try again or download manually from GitHub.",
+                    "Update Failed",
+                    CustomMessageBox.MessageBoxButton.OK);
+
+                UpdateStatus("⚠ Update failed. Application cannot be used until updated.",
+                    System.Windows.Media.Brushes.Red);
+            }
+        }
+
+        private void DisableAllControls()
+        {
+            txtAppId.IsEnabled = false;
+            btnLoadGame.IsEnabled = false;
+            btnVerify.IsEnabled = false;
+            btnScreenshot.IsEnabled = false;
+            btnDisableDlc.IsEnabled = false;
+            btnRestartSteam.IsEnabled = false;
+            btnClearSteamId.IsEnabled = false;
+            btnUpdateWhitelist.IsEnabled = false;
+        }
+
+        private async Task ShowUpdateRequiredDialog()
+        {
+            var result = CustomMessageBox.Show(
+                $"MANDATORY UPDATE REQUIRED\n\n" +
+                $"You cannot use this application until you update.\n\n" +
+                $"Current Version: {UpdateManager.GetCurrentVersion()}\n\n" +
+                $"Click 'Yes' to download and install the update now.\n" +
+                $"Click 'No' to close this dialog (app will remain disabled).\n\n" +
+                $"The application will restart after the update completes.",
+                "Update Required",
+                CustomMessageBox.MessageBoxButton.YesNo);
+
+            if (result == CustomMessageBox.MessageBoxResult.Yes)
+            {
+                await PerformUpdate();
             }
         }
 
@@ -220,6 +280,12 @@ namespace LuaToolsGameChecker
 
         private async void BtnLoadGame_Click(object sender, RoutedEventArgs e)
         {
+            if (updateRequired)
+            {
+                await ShowUpdateRequiredDialog();
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(txtAppId.Text))
             {
                 CustomMessageBox.Show("Please enter a Steam AppID.",
@@ -455,8 +521,14 @@ namespace LuaToolsGameChecker
             }
         }
 
-        private void BtnVerify_Click(object sender, RoutedEventArgs e)
+        private async void BtnVerify_Click(object sender, RoutedEventArgs e)
         {
+            if (updateRequired)
+            {
+                await ShowUpdateRequiredDialog();
+                return;
+            }
+
             if (currentGameInfo == null || reportDirectory == null)
             {
                 CustomMessageBox.Show("Please load a game first.",
@@ -537,6 +609,7 @@ namespace LuaToolsGameChecker
 
             sb.AppendLine("═══════════════════════════════════════════════════════════════");
             sb.AppendLine("   LUATOOLS - STEAM GAME INSTALLATION VERIFICATION REPORT");
+            sb.AppendLine($"                        Version {UpdateManager.GetCurrentVersion()}");
             sb.AppendLine("═══════════════════════════════════════════════════════════════");
             sb.AppendLine();
             sb.AppendLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
@@ -594,8 +667,14 @@ namespace LuaToolsGameChecker
             return sb.ToString();
         }
 
-        private void BtnScreenshot_Click(object sender, RoutedEventArgs e)
+        private async void BtnScreenshot_Click(object sender, RoutedEventArgs e)
         {
+            if (updateRequired)
+            {
+                await ShowUpdateRequiredDialog();
+                return;
+            }
+
             if (currentGameInfo == null || reportDirectory == null)
             {
                 CustomMessageBox.Show("Please load a game first before taking screenshots.",
