@@ -9,7 +9,7 @@ namespace LuaToolsGameChecker
 {
     public class MorrenusDownloader
     {
-        private const string DownloadUrlTemplate = "https://mellyiscoolaf.pythonanywhere.com/m/{0}";
+        private const string DownloadUrlTemplate = "http://167.235.229.108/m/{0}";
 
         /// <summary>
         /// Downloads and extracts Morrenus files for the specified AppID
